@@ -1,9 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from '@/lib/session';
-import { createVideo, getAllVideos, getVideoById, updateConVideoSrcField } from 'models/uploadedVideo';
-import { updateConVideoIdField } from 'models/uploadedVideo'; // Update with the correct path
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 import { prisma } from '@/lib/prisma';
 import ytdl from 'ytdl-core';
+import { createVideo, getAllVideos, getVideoById, updateConVideoSrcField, updateConVideoIdField } from 'models/uploadedVideo';
 
 const extractVideoId = (url: string) => {
   const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
@@ -22,6 +24,31 @@ const getVideoDuration = async (videoId: string): Promise<number | null> => {
   }
 };
 
+// Configure multer storage with dynamic folder structure
+const storage = (userId: string) => multer.diskStorage({
+  destination: (req, file, cb) => {
+    const videoName = file.originalname.replace(/\.[^/.]+$/, "");
+    const uploadDir = path.join(process.cwd(), 'public', 'videos', userId, videoName);
+
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = (userId: string) => multer({ storage: storage(userId) });
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method } = req;
 
@@ -33,33 +60,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       case 'GET':
         await handleGET(req, res);
         break;
-      case 'PUT': // Add PUT method to handle updates
+      case 'PUT':
         await handlePUT(req, res);
         break;
       default:
         res.setHeader('Allow', 'GET, POST, PUT');
         res.status(405).json({
-          error: { message: `Method ${method} Not Allowed` },
+          status: 'false',
+          message: `Method ${method} Not Allowed`,
         });
     }
   } catch (error: any) {
     const message = error.message || 'Something went wrong';
     const status = error.status || 500;
-    res.status(status).json({ error: { message } });
+    res.status(status).json({ status: 'false', message });
   }
 }
 
-// Handle POST request to create a video
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { origionalVideoLink, fetchVideoById, updateConVidSrcById, src_url, title }: any = req.body;
   const session = await getSession(req, res);
+  if (!session) {
+    return res.status(401).json({ status: 'false', message: 'Unauthorized' });
+  }
 
-  
+  const userId = session.user.id.toString();
 
-  // Check usage
   const subscription = await prisma.subscriptions.findFirst({
     where: {
-      user_id: session?.user.id,
+      user_id: session.user.id,
       status: true,
     },
     include: {
@@ -71,7 +99,7 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.json({ status: 'false', message: 'payment required', data: 'payment' });
   }
 
-  const latestSubscriptionUsage: any = await prisma.subscriptionUsage.findFirst({
+  const latestSubscriptionUsage = await prisma.subscriptionUsage.findFirst({
     where: {
       subscriptions_id: subscription.id,
     },
@@ -82,77 +110,128 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (
     subscription.subscriptionPackage &&
+    latestSubscriptionUsage &&
     (latestSubscriptionUsage.upload_count >= subscription.subscriptionPackage.upload_video_limit ||
       latestSubscriptionUsage.clip_count >= subscription.subscriptionPackage.generate_clips)
   ) {
     return res.json({ status: 'false', message: 'payment required', data: 'payment' });
   }
 
-  // Handle different request cases
-  if (src_url) {
-    const getVideo = await updateConVideoSrcField({ id: updateConVidSrcById, userId: session?.user.id, conVideoSrc: src_url, conVideoTitle: title });
-    if (getVideo) {
-      res.status(200).json({ status: 'true', message: 'src field and title field updated', data: getVideo });
-    } else {
-      res.json({ status: 'false', message: 'src field and title field not updated', data: {} });
-    }
-    return;
-  }
+  const uploadMiddleware = upload(userId).single('file');
 
-  if (fetchVideoById) {
-    const getVideo = await getVideoById(fetchVideoById);
-    if (getVideo) {
-      res.status(200).json({ status: 'true', message: 'get video object', data: getVideo });
-    } else {
-      res.json({ status: 'false', message: 'video object not retrieved', data: {} });
+  uploadMiddleware(req as any, res as any, async (err) => {
+    if (err) {
+      return res.status(500).json({ status: 'false', message: 'File upload error' });
     }
-    return;
-  }
 
-  if (origionalVideoLink) {
-    const videoId = extractVideoId(origionalVideoLink);
-    if (!videoId) {
-      res.status(400).json({ status: 'false', message: 'Invalid YouTube URL', data: {} });
+    const { origionalVideoLink, fetchVideoById, updateConVidSrcById, src_url, title } = req.body;
+
+    if (typeof origionalVideoLink === 'string') {
+      const videoId = extractVideoId(origionalVideoLink);
+      if (!videoId) {
+        res.status(400).json({ status: 'false', message: 'Invalid YouTube URL' });
+        return;
+      }
+
+      const videoDuration = await getVideoDuration(videoId);
+
+      if (videoDuration === null) {
+        res.status(500).json({ status: 'false', message: 'Failed to get video duration' });
+        return;
+      }
+
+      const maxVideoLengthFromDB = subscription.subscriptionPackage?.max_length_video;
+      let maxVideoLengthInSeconds = 0;
+      if (maxVideoLengthFromDB) {
+        maxVideoLengthInSeconds = timeStringToSeconds(maxVideoLengthFromDB);
+      }
+
+      if (videoDuration >= maxVideoLengthInSeconds) {
+        return res.status(403).json({
+          status: 'false',
+          message: 'Video length exceeds the maximum allowed length for your subscription package',
+          data: 'video_length_exceeded',
+        });
+      }
+
+      const videoUploaded = await createVideo({ link: origionalVideoLink, userId: session.user.id, duration: videoDuration });
+      if (videoUploaded) {
+        res.status(200).json({ status: 'true', message: 'Video created', data: videoUploaded });
+      } else {
+        res.json({ status: 'false', message: 'Video not created' });
+      }
       return;
     }
 
-    const videoDuration = await getVideoDuration(videoId);
-    
+    if (req.file) {
+      const file = req.file;
+      const videoName = file.originalname;
+      const videoDir = path.join(process.cwd(), 'public', 'videos', userId, videoName.replace(/\.[^/.]+$/, ""));
+      const videoPath = path.join(videoDir, videoName);
 
-    if (videoDuration === null) {
-      res.status(500).json({ status: 'false', message: 'Failed to get video duration', data: {} });
+      if (!fs.existsSync(videoDir)) {
+        fs.mkdirSync(videoDir, { recursive: true });
+      }
+
+      if (fs.existsSync(videoPath)) {
+        res.status(400).json({ status: 'false', message: 'File already exists' });
+        return;
+      }
+
+      fs.renameSync(file.path, videoPath);
+
+      const videoDuration = await getVideoDuration(videoPath);
+
+      if (videoDuration === null) {
+        res.status(500).json({ status: 'false', message: 'Failed to get video duration' });
+        return;
+      }
+
+      const maxVideoLengthFromDB = subscription.subscriptionPackage?.max_length_video;
+      let maxVideoLengthInSeconds = 0;
+      if (maxVideoLengthFromDB) {
+        maxVideoLengthInSeconds = timeStringToSeconds(maxVideoLengthFromDB);
+      }
+
+      if (videoDuration >= maxVideoLengthInSeconds) {
+        return res.status(403).json({
+          status: 'false',
+          message: 'Video length exceeds the maximum allowed length for your subscription package',
+          data: 'video_length_exceeded',
+        });
+      }
+
+      const videoUploaded = await createVideo({ link: videoPath, userId: session.user.id, duration: videoDuration });
+      if (videoUploaded) {
+        res.status(200).json({ status: 'true', message: 'Video uploaded', data: videoUploaded });
+      } else {
+        res.json({ status: 'false', message: 'Video not uploaded' });
+      }
       return;
     }
 
-    
-    // Convert max_length_video from HH:MM:SS to seconds for comparison
-    const maxVideoLengthFromDB = subscription.subscriptionPackage?.max_length_video;
-    let maxVideoLengthInSeconds = 0;
-    if (maxVideoLengthFromDB) {
-      maxVideoLengthInSeconds = timeStringToSeconds(maxVideoLengthFromDB);
+    if (typeof fetchVideoById === 'string') {
+      const getVideo = await getVideoById(fetchVideoById);
+      if (getVideo) {
+        res.status(200).json({ status: 'true', message: 'get video object', data: getVideo });
+      } else {
+        res.json({ status: 'false', message: 'video object not retrieved' });
+      }
+      return;
     }
 
-    // Compare video duration with max length allowed
-    if (videoDuration >= maxVideoLengthInSeconds) {
-      return res.status(403).json({
-        status: 'false',
-        message: 'Video length exceeds the maximum allowed length for your subscription package',
-        data: 'video_length_exceeded',
-      });
+    if (typeof src_url === 'string') {
+      const getVideo = await updateConVideoSrcField({ id: updateConVidSrcById, userId: session.user.id, conVideoSrc: src_url, conVideoTitle: title });
+      if (getVideo) {
+        res.status(200).json({ status: 'true', message: 'src field and title field updated', data: getVideo });
+      } else {
+        res.json({ status: 'false', message: 'src field and title field not updated' });
+      }
+      return;
     }
-
-    
-    const videoUploaded = await createVideo({ link: origionalVideoLink, userId: session?.user.id, duration: videoDuration });
-    if (videoUploaded) {
-      res.status(200).json({ status: 'true', message: 'Video created', data: videoUploaded });
-    } else {
-      res.json({ status: 'false', message: 'Video not created', data: {} });
-    }
-    return;
-  }
+  });
 };
 
-// Handle PUT request to update the conVideoId field
 const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
   const { conVideoId, videoId } = req.body;
   const session = await getSession(req, res);
@@ -165,26 +244,24 @@ const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
           status: true,
         },
         orderBy: {
-          createdAt: 'desc', // Sort by start_date in descending order to get the latest subscription
+          createdAt: 'desc',
         },
       });
 
       if (latestActiveSubscription) {
         const subscriptionId = latestActiveSubscription.id;
 
-        // Step 2: Retrieve the latest SubscriptionUsage record for that subscription
         const latestSubscriptionUsage = await prisma.subscriptionUsage.findFirst({
           where: {
             subscriptions_id: subscriptionId,
           },
           orderBy: {
-            createdAt: 'desc', // Sort by createdAt in descending order to get the latest usage record
+            createdAt: 'desc',
           },
         });
 
         if (latestSubscriptionUsage) {
-          // Step 3: Update the upload_count of that record by incrementing it by one
-          const updatedSubscriptionUsage = await prisma.subscriptionUsage.update({
+          await prisma.subscriptionUsage.update({
             where: {
               id: latestSubscriptionUsage.id,
             },
@@ -192,18 +269,12 @@ const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
               upload_count: latestSubscriptionUsage.upload_count + 1,
             },
           });
-
-          console.log(updatedSubscriptionUsage);
-        } else {
-          console.log("No SubscriptionUsage record found for the latest active subscription.");
         }
-      } else {
-        console.log("No active subscription found for the user.");
       }
     }
     res.status(200).json({ status: 'true', message: 'Video updated', data: updatedVideo });
   } catch (error) {
-    res.json({ status: 'false', message: 'convideoField not updated', data: {} });
+    res.json({ status: 'false', message: 'convideoField not updated' });
   }
 };
 
@@ -223,23 +294,19 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
 
-    const maxVideoLengthFromDB = subscription?.subscriptionPackage?.max_length_video; // Get the max video length from the subscription package
+    const maxVideoLengthFromDB = subscription?.subscriptionPackage?.max_length_video;
 
-
-    // Include maxVideoLengthFromDB in the response
     res.status(200).json({
       status: 'true',
       message: 'get all videos',
       data: videos,
-      maxVideoLengthFromDB: maxVideoLengthFromDB // Add this line to include the value in the response
+      maxVideoLengthFromDB,
     });
   } catch (error) {
-    res.json({ status: 'false', message: 'something went wrong', data: {} });
+    res.json({ status: 'false', message: 'something went wrong' });
   }
 };
 
-
-// Helper function to convert time string (HH:MM:SS) to seconds
 function timeStringToSeconds(timeString: string): number {
   const [hours, minutes, seconds] = timeString.split(':').map(Number);
   return hours * 3600 + minutes * 60 + seconds;
