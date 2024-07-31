@@ -57,26 +57,15 @@ const VideoUpload: React.FC = () => {
 
       setIsUploading(false);
 
-      if (response.data.status === 'false' && response.data.data === 'payment') {
-        toast.error('You need to buy a subscription to upload videos.');
-        router.push(`/pricing`);
-        return;
-      }
-
-      if (response.data.status === 'true') {
-        const { id, maxVideoLengthFromDB } = response.data.data;
-        setMaxVideoLengthFromDB(maxVideoLengthFromDB);
-        router.push(`/videos/${id}`);
-        toast.success('Upload complete');
-      } else {
-        toast.error('Error uploading video');
+      if (response.data.status === 'file uploaded') {
+        toast.success('File uploaded successfully');
+      }  else {
+        toast.error('Error uploading file');
       }
     } catch (error) {
       setIsUploading(false);
       console.error('Error uploading video:', error);
-      setMaxVideoLengthFromDB(null);
-      // toast.error('Error uploading video');
-      alert('catch')
+      toast.error('Something went wrong');
     }
   };
 

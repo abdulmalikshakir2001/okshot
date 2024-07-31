@@ -27,9 +27,10 @@ const getVideoDuration = async (videoId: string): Promise<number | null> => {
 // Configure multer storage with dynamic folder structure
 const storage = (userId: string) => multer.diskStorage({
   destination: (req, file, cb) => {
+    const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
     const videoName = file.originalname.replace(/\.[^/.]+$/, "");
-    const uploadDir = path.join(process.cwd(), 'public', 'videos', userId, videoName);
-
+    const uploadDir = path.join(process.cwd(), 'public', 'videos', userId, `${videoName}_${timestamp}`);
+    
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -37,7 +38,9 @@ const storage = (userId: string) => multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname);
+    const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
+    const fileName = `${file.originalname.replace(/\.[^/.]+$/, '')}_${timestamp}${path.extname(file.originalname)}`;
+    cb(null, fileName);
   },
 });
 
@@ -116,13 +119,16 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
   ) {
     return res.json({ status: 'false', message: 'payment required', data: 'payment' });
   }
-
+ 
   const uploadMiddleware = upload(userId).single('file');
 
   uploadMiddleware(req as any, res as any, async (err) => {
     if (err) {
       return res.status(500).json({ status: 'false', message: 'File upload error' });
     }
+    return res.status(200).json({ status: 'file uploaded', message: 'File Uploaded successfully' });
+
+
 
     const { origionalVideoLink, fetchVideoById, updateConVidSrcById, src_url, title } = req.body;
 
@@ -163,52 +169,9 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
-    if (req.file) {
-      const file = req.file;
-      const videoName = file.originalname;
-      const videoDir = path.join(process.cwd(), 'public', 'videos', userId, videoName.replace(/\.[^/.]+$/, ""));
-      const videoPath = path.join(videoDir, videoName);
-
-      if (!fs.existsSync(videoDir)) {
-        fs.mkdirSync(videoDir, { recursive: true });
-      }
-
-      if (fs.existsSync(videoPath)) {
-        res.status(400).json({ status: 'false', message: 'File already exists' });
-        return;
-      }
-
-      fs.renameSync(file.path, videoPath);
-
-      const videoDuration = await getVideoDuration(videoPath);
-
-      if (videoDuration === null) {
-        res.status(500).json({ status: 'false', message: 'Failed to get video duration' });
-        return;
-      }
-
-      const maxVideoLengthFromDB = subscription.subscriptionPackage?.max_length_video;
-      let maxVideoLengthInSeconds = 0;
-      if (maxVideoLengthFromDB) {
-        maxVideoLengthInSeconds = timeStringToSeconds(maxVideoLengthFromDB);
-      }
-
-      if (videoDuration >= maxVideoLengthInSeconds) {
-        return res.status(403).json({
-          status: 'false',
-          message: 'Video length exceeds the maximum allowed length for your subscription package',
-          data: 'video_length_exceeded',
-        });
-      }
-
-      const videoUploaded = await createVideo({ link: videoPath, userId: session.user.id, duration: videoDuration });
-      if (videoUploaded) {
-        res.status(200).json({ status: 'true', message: 'Video uploaded', data: videoUploaded });
-      } else {
-        res.json({ status: 'false', message: 'Video not uploaded' });
-      }
-      return;
-    }
+    // video upload start
+    
+    // video upload end
 
     if (typeof fetchVideoById === 'string') {
       const getVideo = await getVideoById(fetchVideoById);
