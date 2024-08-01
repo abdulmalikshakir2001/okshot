@@ -59,8 +59,8 @@ const VideoUpload: React.FC = () => {
 
       if (response.data.status === 'file uploaded') {
         toast.success('File uploaded successfully');
-      }  else {
-        toast.error('Error uploading file');
+      }  else if(response.data.status === 'file exist') {
+        toast.error('File already exist');
       }
     } catch (error) {
       setIsUploading(false);

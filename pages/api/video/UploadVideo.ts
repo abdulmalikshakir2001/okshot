@@ -7,6 +7,10 @@ import { prisma } from '@/lib/prisma';
 import ytdl from 'ytdl-core';
 import { createVideo, getAllVideos, getVideoById, updateConVideoSrcField, updateConVideoIdField } from 'models/uploadedVideo';
 
+interface ExtendedNextApiRequest extends NextApiRequest {
+  fileValidationError?: string |null;
+}
+
 const extractVideoId = (url: string) => {
   const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
   const match = url.match(regex);
@@ -25,11 +29,12 @@ const getVideoDuration = async (videoId: string): Promise<number | null> => {
 };
 
 // Configure multer storage with dynamic folder structure
+let globalTimestamp: string;
+
 const storage = (userId: string) => multer.diskStorage({
   destination: (req, file, cb) => {
-    const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
     const videoName = file.originalname.replace(/\.[^/.]+$/, "");
-    const uploadDir = path.join(process.cwd(), 'public', 'videos', userId, `${videoName}_${timestamp}`);
+    const uploadDir = path.join(process.cwd(), 'public', 'videos', userId, `${videoName}_${globalTimestamp}`);
     
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
@@ -38,13 +43,32 @@ const storage = (userId: string) => multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const timestamp = new Date().toISOString().replace(/[-:.]/g, '');
-    const fileName = `${file.originalname.replace(/\.[^/.]+$/, '')}_${timestamp}${path.extname(file.originalname)}`;
+    const fileName = `${file.originalname.replace(/\.[^/.]+$/, '')}_${globalTimestamp}${path.extname(file.originalname)}`;
     cb(null, fileName);
   },
 });
 
-const upload = (userId: string) => multer({ storage: storage(userId) });
+const upload = (userId: string) => multer({ 
+  storage: storage(userId),
+  fileFilter: (req: ExtendedNextApiRequest, file, cb) => {
+    const videoName = file.originalname.replace(/\.[^/.]+$/, "");
+    const uploadDir = path.join(process.cwd(), 'public', 'videos', userId, `${videoName}_${globalTimestamp}`);
+
+    req.fileValidationError = null;
+    // check
+    
+    if (fs.existsSync(uploadDir)) {
+      req.fileValidationError = "file exist";
+      return cb(null, false); // If directory exists, reject the file upload
+    }
+
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    cb(null, true);
+  }
+});
 
 export const config = {
   api: {
@@ -52,7 +76,7 @@ export const config = {
   },
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: ExtendedNextApiRequest, res: NextApiResponse) {
   const { method } = req;
 
   try {
@@ -80,7 +104,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
+const handlePOST = async (req: ExtendedNextApiRequest, res: NextApiResponse) => {
   const session = await getSession(req, res);
   if (!session) {
     return res.status(401).json({ status: 'false', message: 'Unauthorized' });
@@ -120,15 +144,20 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.json({ status: 'false', message: 'payment required', data: 'payment' });
   }
  
+  globalTimestamp = new Date().toISOString().replace(/[-:.]/g, ''); // Set the global timestamp
+
   const uploadMiddleware = upload(userId).single('file');
 
   uploadMiddleware(req as any, res as any, async (err) => {
     if (err) {
-      return res.status(500).json({ status: 'false', message: 'File upload error' });
+      return res.json({ status: 'false', message: 'File upload error' });
     }
-    return res.status(200).json({ status: 'file uploaded', message: 'File Uploaded successfully' });
+    if (req.fileValidationError && req.fileValidationError ===  "file exist") {
+      return res.json({ status: 'file exist', message: 'File already exist' });
+    }
 
-
+    return res.json({ status: 'file uploaded', message: 'File upload successfully' });
+    
 
     const { origionalVideoLink, fetchVideoById, updateConVidSrcById, src_url, title } = req.body;
 
@@ -169,10 +198,6 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
-    // video upload start
-    
-    // video upload end
-
     if (typeof fetchVideoById === 'string') {
       const getVideo = await getVideoById(fetchVideoById);
       if (getVideo) {
@@ -192,10 +217,12 @@ const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
       }
       return;
     }
+    
+    return res.status(200).json({ status: 'file uploaded', message: 'File Uploaded successfully' });
   });
 };
 
-const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
+const handlePUT = async (req: ExtendedNextApiRequest, res: NextApiResponse) => {
   const { conVideoId, videoId } = req.body;
   const session = await getSession(req, res);
   try {
@@ -241,7 +268,7 @@ const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
+const handleGET = async (req: ExtendedNextApiRequest, res: NextApiResponse) => {
   const session = await getSession(req, res);
 
   try {
