@@ -93,7 +93,7 @@ const VideoUpload: React.FC = () => {
       setLoading(true);
 
       try {
-        const response = await axios.post('/api/video/UploadVideo', {
+        const response = await axios.post('/api/video/UploadLink', {
           origionalVideoLink: link,
         });
 
