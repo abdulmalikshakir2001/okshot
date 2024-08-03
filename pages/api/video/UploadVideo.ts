@@ -4,9 +4,11 @@ import multer, { diskStorage } from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
+import { createVideo } from 'models/uploadedVideo';
 
 interface ExtendedNextApiRequest extends NextApiRequest {
   fileValidationError?: string | null;
+  file?: Express.Multer.File;
 }
 
 // Configure multer storage with dynamic folder structure
@@ -66,7 +68,7 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
         break;
       
       default:
-        res.setHeader('Allow', 'GET, POST, PUT');
+        res.setHeader('Allow', 'GET, POST');
         res.status(405).json({
           status: 'false',
           message: `Method ${method} Not Allowed`,
@@ -129,6 +131,19 @@ const handlePOST = async (req: ExtendedNextApiRequest, res: NextApiResponse) => 
     }
     if (req.fileValidationError && req.fileValidationError === "file exist") {
       return res.json({ status: 'file exist', message: 'File already exist' });
+    }
+
+    if (req.file) {
+      const videoName = req.file.filename.replace(/\.[^/.]+$/, "");
+      const dbPath = `/videos/${userId}/${videoName}/${req.file.filename}`;
+      const videoDuration = 0; // Add logic to get video duration if needed
+
+      const videoUploaded = await createVideo({ link: dbPath, userId: session.user.id, duration: videoDuration });
+      if (videoUploaded) {
+        return res.status(200).json({ status: 'url inserted', message: 'Video created', data: videoUploaded });
+      } else {
+        return res.json({ status: 'false', message: 'Video not created' });
+      }
     }
 
     return res.json({ status: 'file uploaded', message: 'File upload successfully' });

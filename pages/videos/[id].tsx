@@ -297,10 +297,7 @@ const FetchingVideo: NextPageWithLayout = ({
     }
     
   }, [id, readClipsRef, readyClips, router]);
-  useEffect(()=>{
-    alert(originalLink)
-
-  },[])
+  
   
 
 

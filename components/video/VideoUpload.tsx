@@ -59,8 +59,14 @@ const VideoUpload: React.FC = () => {
 
       if (response.data.status === 'file uploaded') {
         toast.success('File uploaded successfully');
-      }  else if(response.data.status === 'file exist') {
+      } else if(response.data.status === 'file exist') {
         toast.error('File already exist');
+      } else if (response.data.status === 'url inserted') {
+        const { id } = response.data.data;
+        router.push(`/videos/${id}`);
+        toast.success('File uploaded successfully');
+      } else {
+        toast.error('Error uploading video');
       }
     } catch (error) {
       setIsUploading(false);
