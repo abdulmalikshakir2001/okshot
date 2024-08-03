@@ -209,7 +209,7 @@ const VideoUpload: React.FC = () => {
       {isUploading && (
         <div className="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 w-64">
           <div className="text-center text-gray-700 font-semibold mb-2">
-            Uploading Video: {uploadProgress}%
+            {t('uploading-video')}: {uploadProgress}%
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div
