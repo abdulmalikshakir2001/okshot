@@ -139,6 +139,7 @@ const handlePOST = async (req: ExtendedNextApiRequest, res: NextApiResponse) => 
     const videoPath = path.join(uploadDir, `${videoName}.mp4`);
     const audioPath = path.join(uploadDir, `${videoName}.m4a`);
     const outputPath = path.join(uploadDir, `${videoName}_output_${globalTimestamp}.mp4`);
+    const dbPath = `/videos/${userId}/${videoName}_output_${globalTimestamp}/${videoName}_output_${globalTimestamp}.mp4`;
     
     const videoStream = ytdl(videoId, { quality: 'highestvideo' });
     const audioStream = ytdl(videoId, { quality: 'highestaudio' });
@@ -170,7 +171,7 @@ const handlePOST = async (req: ExtendedNextApiRequest, res: NextApiResponse) => 
             console.log('Audio file deleted');
           });
 
-          const videoUploaded = await createVideo({ link: origionalVideoLink, userId: session.user.id, duration: videoDuration });
+          const videoUploaded = await createVideo({ link: dbPath, userId: session.user.id, duration: videoDuration });
           if (videoUploaded) {
             res.status(200).json({ status: 'true', message: 'Video created', data: videoUploaded });
           } else {
