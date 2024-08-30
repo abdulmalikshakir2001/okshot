@@ -59,7 +59,7 @@ export default function Home() {
   const [fontStyle, setFontStyle] = useState<FontStyle>({
     id: 1,
     fontSize: "16px",
-    color: "#000000",
+    color: "#FFFFFF",
     highlightColor: '#0000FF',
     fontFamily: "Montserrat",
     borderRadius: '0.375rem',
@@ -336,7 +336,7 @@ export default function Home() {
                   style={{ 
                     fontSize: `${fontStyle.fontSize}`, 
                     fontFamily: `${fontStyle.fontFamily}`, 
-                    color: `${fontStyle.color}`,  
+                    color: `${fontStyle.color} || text-white`,  
                     fontWeight: `${fontStyle.fontWeight}`, 
                     letterSpacing: `${fontStyle.letterSpacing}`, 
                     textAlign: `${fontStyle.textAlign}`, 
