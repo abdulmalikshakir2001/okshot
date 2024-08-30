@@ -57,22 +57,44 @@ export default function Home() {
   const [showOnlyText, setShowOnlyText] = useState<boolean>(true);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [fontStyle, setFontStyle] = useState<FontStyle>({
-    id: 1,
-    fontSize: "16px",
-    color: "#FFFFFF",
-    highlightColor: '#0000FF',
-    fontFamily: "Montserrat",
-    borderRadius: '0.375rem',
-    padding: '0.5rem 1rem',
-    fontWeight: 800,
-    backgroundColor: "#1CFFDD",
-    textAlign: 'center',
-    textTransform: 'none',
-    letterSpacing: '1.5',
-    xPosition: '10',
-    yPosition: '-30',
-    rotation: '-5',
-    scale: '1'
+      id: 1,
+      fontSize: "16px",
+      color: "#FFFFFF",
+      highlightColor: '#0000FF',
+      fontFamily: "Montserrat",
+      borderRadius: '0.375rem',
+      padding: '0.5rem 0.5rem',
+      fontWeight: 800,
+      textAlign: 'center',
+      textTransform: 'none',
+      letterSpacing: '1.5',
+      xPosition: "10", // Default position
+      yPosition: "-30", // Default position
+      rotation: "-5", // Default rotation
+      scale: "1", // Default scale
+      textShadow:
+          `#1CFFDD 6px 0px 5px, 
+          #1CFFDD 5px 1px 5px, 
+          #1CFFDD 4px 3px 5px, 
+          #1CFFDD 3px 5px 5px, 
+          #1CFFDD 2px 6px 5px, 
+          #1CFFDD 1px 7px 5px, 
+          #1CFFDD 0px 7px 5px, 
+          #1CFFDD -1px 7px 5px, 
+          #1CFFDD -2px 6px 5px, 
+          #1CFFDD -3px 4px 5px, 
+          #1CFFDD -4px 3px 5px, 
+          #1CFFDD -5px 1px 5px, 
+          #1CFFDD -4px -1px 5px, 
+          #1CFFDD -3px -3px 5px, 
+          #1CFFDD -2px -5px 5px, 
+          #1CFFDD -1px -6px 5px, 
+          #1CFFDD 0px -7px 5px, 
+          #1CFFDD 1px -6px 5px, 
+          #1CFFDD 2px -4px 5px, 
+          #1CFFDD 3px -3px 5px, 
+          #1CFFDD 4px -1px 5px`,
+      backgroundColor: " ",
   });
   const [startTime, setStartTime] = useState<number>(0);
   const [endTime, setEndTime] = useState<number>(0);
@@ -82,7 +104,6 @@ export default function Home() {
     setStartTime(start);
     setEndTime(end);
   };
-
   const handleFontStyleChange = (newFontStyle: FontStyle) => {
     setFontStyle(newFontStyle);
   };
@@ -342,7 +363,7 @@ export default function Home() {
                     textAlign: `${fontStyle.textAlign}`, 
                     textTransform: `${fontStyle.textTransform}`, 
                     textShadow: `${textShadow}`,
-                    padding: `${fontStyle.padding}`
+                    padding: `${fontStyle.padding}`,
                    }}
       >
         {words.map((word, index) => (
