@@ -38,9 +38,9 @@ interface FontStyle {
 
 
 export default function Home() {
-  const [videoUrl, setVideoUrl] = useState<string>("/video.mp4");
+  const [videoUrl, setVideoUrl] = useState<string>("/videos/video.mp4");
   const [subtitlesUrl, setSubtitlesUrl] = useState<string>(
-    "/subtitle.srt"
+    "/subtitles/subtitle.srt"
   );
   const [processedVideoUrl, setProcessedVideoUrl] = useState<string | null>(
     null
