@@ -136,6 +136,8 @@ const handlePOST = async (req: ExtendedNextApiRequest, res: NextApiResponse) => 
     if (req.file) {
       const videoName = req.file.filename.replace(/\.[^/.]+$/, "");
       const dbPath = `/videos/${userId}/${videoName}/${req.file.filename}`;
+      // ai code start -------------->
+      // ai code end -------------->
       const videoDuration = 0; // Add logic to get video duration if needed
 
       const videoUploaded = await createVideo({ link: dbPath, userId: session.user.id, duration: videoDuration });
