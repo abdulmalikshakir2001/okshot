@@ -7,9 +7,6 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 
-
-
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -20,9 +17,6 @@ export default async function handler(
     switch (method) {
       case 'POST':
         await handlePOST(req, res);
-        break;
-      case 'PUT': // Add PUT method to handle updates
-        await handlePUT(req, res);
         break;
       default:
         res.setHeader('Allow', 'GET, POST, PUT');
@@ -41,6 +35,40 @@ export default async function handler(
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
 
       const {  originalLink,videoId}: any = req.body;
+      const session = await getSession(req,res)
+      //  check usage
+const subscription = await prisma.subscriptions.findFirst({
+  where: {
+    user_id: session?.user.id,
+    status: true,
+  },
+  include: {
+    subscriptionPackage: true,
+  },
+});
+
+if (!subscription) {
+  return  res.json({ status: 'false', message: 'payment required', data: 'payment' });
+}
+const latestSubscriptionUsage:any = await prisma.subscriptionUsage.findFirst({
+  where: {
+    subscriptions_id: subscription.id,
+  },
+  orderBy: {
+    createdAt: 'desc',
+  },
+});
+
+if (
+  subscription.subscriptionPackage &&
+  (latestSubscriptionUsage.upload_count >= subscription.subscriptionPackage.upload_video_limit ||
+    latestSubscriptionUsage.clip_count >= subscription.subscriptionPackage.generate_clips)
+) {
+  return res.json({ status: 'false', message: 'payment required', data: 'payment' });
+}
+
+//  check usage
+      
       const fileNameWithExtension = path.basename(originalLink);
 
 // Extract the file name without the extension
@@ -144,9 +172,19 @@ const extractedPath = dirPath.substring(startIndex, endIndex);
       // Insert each path into the database
       await createVideoClip({"clipPath":clipPath,"videoId":videoId})
     }
+    const updatedSubscriptionUsage = await prisma.subscriptionUsage.update({
+      where: {
+        id: latestSubscriptionUsage.id,
+      },
+      data: {
+        clip_count: latestSubscriptionUsage.clip_count + clipsArray.length,
+        upload_count: latestSubscriptionUsage.upload_count + 1,
+         
+      },
+    });
 
     console.log('All video clips have been processed and stored successfully.');
-    res.status(200).json({status:'true',message:'video clips created'})
+    return  res.status(200).json({status:'true',message:'video clips created'})
   } catch (err) {
     console.error('Error while processing video clips:', err);
   }
@@ -160,125 +198,6 @@ const extractedPath = dirPath.substring(startIndex, endIndex);
     }
       console.log(firstVar)
       return false;
-  
-
-//  check usage
-const subscription = await prisma.subscriptions.findFirst({
-  where: {
-    user_id: session?.user.id,
-    status: true,
-  },
-  include: {
-    subscriptionPackage: true,
-  },
-});
-
-if (!subscription) {
-  return  res.json({ status: 'false', message: 'payment required', data: 'payment' });
-}
-const latestSubscriptionUsage:any = await prisma.subscriptionUsage.findFirst({
-  where: {
-    subscriptions_id: subscription.id,
-  },
-  orderBy: {
-    createdAt: 'desc',
-  },
-});
-
-if (
-  subscription.subscriptionPackage &&
-  (latestSubscriptionUsage.upload_count >= subscription.subscriptionPackage.upload_video_limit ||
-    latestSubscriptionUsage.clip_count >= subscription.subscriptionPackage.generate_clips)
-) {
-  return res.json({ status: 'false', message: 'payment required', data: 'payment' });
-}
-
-//  check usage
-
-    
-
-
-
-
-
-  
-  
 }
 
 
-
-const handlePUT = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { exportArray }: any = req.body;
-  const session = await getSession(req, res);
-
-  try {
-    const exportParse = JSON.parse(exportArray);
-    console.log(exportParse)
-    let countForRes = 0;
-
-    for (const clip of exportParse) {
-      const updateVideo =  await updateVideoClip({ title: clip.name, src_url: clip.src_url, clip_id: clip.id });
-      if(updateVideo){
-        countForRes++
-
-      }
-    }
-    if(countForRes ===exportParse.length){
-      //=================
-      const latestActiveSubscription = await prisma.subscriptions.findFirst({
-        where: {
-          user_id: session?.user.id,
-          status: true,
-        },
-        orderBy: {
-          createdAt: 'desc', // Sort by start_date in descending order to get the latest subscription
-        },
-      });
-      
-      if (latestActiveSubscription) {
-        const subscriptionId = latestActiveSubscription.id;
-      
-        // Step 2: Retrieve the latest SubscriptionUsage record for that subscription
-        const latestSubscriptionUsage = await prisma.subscriptionUsage.findFirst({
-          where: {
-            subscriptions_id: subscriptionId,
-          },
-          orderBy: {
-            createdAt: 'desc', // Sort by createdAt in descending order to get the latest usage record
-          },
-        });
-      
-        if (latestSubscriptionUsage) {
-          // Step 3: Update the upload_count of that record by incrementing it by one
-          const updatedSubscriptionUsage = await prisma.subscriptionUsage.update({
-            where: {
-              id: latestSubscriptionUsage.id,
-            },
-            data: {
-              clip_count: latestSubscriptionUsage.clip_count + countForRes,
-            },
-          });
-      
-          console.log(updatedSubscriptionUsage);
-        } else {
-          console.log("No SubscriptionUsage record found for the latest active subscription.");
-        }
-      } else {
-        console.log("No active subscription found for the user.");
-      }
-      //=================
-      countForRes=0
-      res.status(200).json({ status: 'true', message: 'Video clips updated', data: {} });
-
-    }else {
-      countForRes=0
-      res.status(500).json({ status: 'false', message: 'Not all video clips were updated', data: {} });
-    }
-
-    
-
-  } catch (error) {
-    console.error('Error updating video clips:', error);
-    res.status(500).json({ status: 'false', message: 'Video clips not updated', data: {} });
-  }
-};

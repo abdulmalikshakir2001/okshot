@@ -168,7 +168,6 @@ const VideoUpload: React.FC = () => {
           ) : null
         )}
       </div>
-
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
