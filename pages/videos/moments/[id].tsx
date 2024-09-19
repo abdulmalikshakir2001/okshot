@@ -17,7 +17,7 @@ const FetchingVideo: NextPageWithLayout = () => {
   const [videoClips, setVidoClips] = useState<any[]>([]); 
   useEffect(()=>{
     axios
-              .post('/api/videoClips/clips', {
+              .post('/api/videoClips/getAllClips', {
                 videoIdForClips: id,
                 
               })

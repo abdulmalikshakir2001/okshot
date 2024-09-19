@@ -6,6 +6,7 @@
 /.pnp
 .pnp.js
 yarn.lock
+public/videos/*.mp4
 
 # testing
 /coverage
