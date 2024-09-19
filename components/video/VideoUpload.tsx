@@ -65,7 +65,12 @@ const VideoUpload: React.FC = () => {
         const { id } = response.data.data;
         router.push(`/videos/${id}`);
         toast.success('File uploaded successfully');
-      } else {
+      }
+      else if (response.data.status === 'subscription limit end') {
+        router.push(`/dashboard/manageSubscription`);
+        toast.error('Please upgrade subscription plan');
+      }
+       else {
         toast.error('Error uploading video');
       }
     } catch (error) {

@@ -118,7 +118,7 @@ const handlePOST = async (req: ExtendedNextApiRequest, res: NextApiResponse) => 
     (latestSubscriptionUsage.upload_count >= subscription.subscriptionPackage.upload_video_limit ||
       latestSubscriptionUsage.clip_count >= subscription.subscriptionPackage.generate_clips)
   ) {
-    return res.json({ status: 'false', message: 'payment required', data: 'payment' });
+    return res.json({ status: 'subscription limit end', message: 'payment required', data: 'payment' });
   }
 
   globalTimestamp = new Date().toISOString().replace(/[-:.]/g, ''); // Set the global timestamp

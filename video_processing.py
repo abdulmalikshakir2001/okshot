@@ -139,7 +139,7 @@ def videoProcessing(config):
     crops = resize(
         video_file_path=video_file_path,
         pyannote_auth_token=pyannote_auth_token,
-        aspect_ratio=(9, 16)  # Adjusted to 16:9 aspect ratio
+        aspect_ratio=(1, 1)  # Adjusted to 16:9 aspect ratio
     )
     print("Crops: ", crops.segments)
     media_editor = MediaEditor()

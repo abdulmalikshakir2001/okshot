@@ -184,7 +184,7 @@ const extractedPath = dirPath.substring(startIndex, endIndex);
     });
 
     console.log('All video clips have been processed and stored successfully.');
-    return  res.status(200).json({status:'true',message:'video clips created'})
+    return  res.json({status:'clips created',message:'video clips created'})
   } catch (err) {
     console.error('Error while processing video clips:', err);
   }

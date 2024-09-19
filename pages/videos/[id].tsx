@@ -27,10 +27,10 @@ const FetchingVideo: NextPageWithLayout = ({
       videoId: id,
   })
   .then(response => {
-    if(response.data.status === 'true'){
+    if(response.data.status === 'clips created'){
       router.push(`/videos/moments/${id}`)
     }
-      console.log('Response:', response.data);
+      console.log('Response:', response.data.status);
   })
   .catch(error => {
       console.error('Error:', error);
