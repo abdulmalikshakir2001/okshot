@@ -58,7 +58,7 @@ const FetchingVideo: NextPageWithLayout = () => {
             </div>
           </h3>
           <ReactPlayer 
-            url={`${clip.clipSrc}/clip_${index + 1}_subtitled.mp4`} 
+            url={`${clip.clipSubtitledSrc}`} 
             controls={true} 
           />
         </div>

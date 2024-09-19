@@ -211,6 +211,10 @@ model VideoClips {
   clip_id       String?       @unique
   exportId      String?       @unique
   clipSrc       String?
+  assSrc       String?
+  srtSrc       String?
+  clipSubtitledSrc       String?
+  audioSrc       String?
   title         String?
   videoId       Int // Foreign key field
   uploadedVideo UploadedVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)

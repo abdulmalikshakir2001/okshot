@@ -1,14 +1,19 @@
 import { prisma } from '@/lib/prisma'; // Import your Prisma instance
 
-export const createVideoClip = async (data: { videoId: number; clipPath: string }) => {
+export const createVideoClip = async (data: any) => {
   try {
-    const { videoId, clipPath } = data;
+    
+    const {  clipSrc,srtSrc,assSrc,audioSrc,clipSubtitledSrc,videoId } = data;
 
     // Create a new video clip record in the VideoClips table
     const newClip = await prisma.videoClips.create({
       data: {
-        videoId: +videoId,     // Foreign key reference to the video
-        clipSrc: clipPath,    // Path of the clip
+        clipSrc,
+        srtSrc:srtSrc,
+        assSrc:assSrc,
+        audioSrc:audioSrc,
+        clipSubtitledSrc:clipSubtitledSrc,
+        videoId: +videoId,  // Ensuring videoId is cast to number
       },
     });
 

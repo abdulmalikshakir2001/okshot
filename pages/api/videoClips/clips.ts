@@ -156,24 +156,49 @@ pythonProcess.on('close', async (code) => {
   try {
     const startIndex = dirPath.indexOf('/videos');
     const endIndex = dirPath.indexOf('/clips') + '/clips'.length;
-
     const extractedPath = dirPath.substring(startIndex, endIndex);
 
     // Read all files from the directory
     const files = fs.readdirSync(dirPath);
 
     // Regular expression to match files with numbers before '.mp4'
-    const regex = /_\d+\.mp4$/;
+    const regexMp4 = /_\d+\.mp4$/;
+    const regexSrt = /_\d+_srt\.srt$/;
+    const regexAss = /_\d+_ass\.ass$/;
+    const regexAudio = /_\d+_audio\.wav$/;
+    const regexSubtitled = /_\d+_subtitled\.mp4$/;
 
-    // Filter only .mp4 files that have numerical characters before '.mp4'
+    // Filter files and map them according to their types
     const clipsArray = files
-      .filter(file => regex.test(file)) // Apply the regex filter
-      .map(file => extractedPath); // Create full path for each file
+      .filter(file => regexMp4.test(file))
+      .map(file => {
+        const baseName = file.replace(/\.mp4$/, ''); // Extract the base name like 'clip_1'
 
-    // Loop through the array and store each path in the database
-    for (let clipPath of clipsArray) {
-      // Insert each path into the database
-      await createVideoClip({ "clipPath": clipPath, "videoId": videoId });
+        // Look for associated files based on the prefix (e.g., clip_1)
+        const srtFile = files.find(f => f.startsWith(baseName) && regexSrt.test(f));
+        const assFile = files.find(f => f.startsWith(baseName) && regexAss.test(f));
+        const audioFile = files.find(f => f.startsWith(baseName) && regexAudio.test(f));
+        const subtitledFile = files.find(f => f.startsWith(baseName) && regexSubtitled.test(f));
+        return {
+          clipSrc: path.join(extractedPath, file), // Full path for clip
+          srtSrc: srtFile ? path.join(extractedPath, srtFile) : null, // Full path for .srt
+          assSrc: assFile ? path.join(extractedPath, assFile) : null, // Full path for .ass
+          audioSrc: audioFile ? path.join(extractedPath, audioFile) : null, // Full path for .wav
+          clipSubtitledSrc: subtitledFile ? path.join(extractedPath, subtitledFile) : null, // Full path for subtitled .mp4
+        };
+      });
+
+    // Loop through the array and store each clip and its associated paths in the database
+    for (let clipData of clipsArray) {
+      // Insert each clip's details into the database
+      await createVideoClip({
+        clipSrc: clipData.clipSrc,
+        srtSrc: clipData.srtSrc,
+        assSrc: clipData.assSrc,
+        audioSrc: clipData.audioSrc,
+        clipSubtitledSrc: clipData.clipSubtitledSrc,
+        videoId: videoId
+      });
     }
 
     const updatedSubscriptionUsage = await prisma.subscriptionUsage.update({
@@ -186,12 +211,13 @@ pythonProcess.on('close', async (code) => {
       },
     });
 
-    console.log('All video clips have been processed and stored successfully.');
-    return res.json({ status: 'clips created', message: 'video clips created' });
+    console.log('All video clips and associated files have been processed and stored successfully.');
+    return res.json({ status: 'clips created', message: 'video clips and associated files created' });
   } catch (err) {
-    console.error('Error while processing video clips:', err);
+    console.error('Error while processing video clips and associated files:', err);
   }
 });
+
 
 
 
