@@ -155,23 +155,27 @@ pythonProcess.stderr.on('data', (data) => {
 pythonProcess.on('close', async (code) => {
   try {
     const startIndex = dirPath.indexOf('/videos');
-const endIndex = dirPath.indexOf('/clips') + '/clips'.length;
+    const endIndex = dirPath.indexOf('/clips') + '/clips'.length;
 
-const extractedPath = dirPath.substring(startIndex, endIndex);
+    const extractedPath = dirPath.substring(startIndex, endIndex);
 
     // Read all files from the directory
     const files = fs.readdirSync(dirPath);
 
-    // Filter only .mp4 files and construct full paths
+    // Regular expression to match files with numbers before '.mp4'
+    const regex = /_\d+\.mp4$/;
+
+    // Filter only .mp4 files that have numerical characters before '.mp4'
     const clipsArray = files
-      .filter(file => file.endsWith('.mp4')) // Filter for only .mp4 files
-      .map(file => path.join(extractedPath, file)); // Create full path for each file
+      .filter(file => regex.test(file)) // Apply the regex filter
+      .map(file => extractedPath); // Create full path for each file
 
     // Loop through the array and store each path in the database
     for (let clipPath of clipsArray) {
       // Insert each path into the database
-      await createVideoClip({"clipPath":clipPath,"videoId":videoId})
+      await createVideoClip({ "clipPath": clipPath, "videoId": videoId });
     }
+
     const updatedSubscriptionUsage = await prisma.subscriptionUsage.update({
       where: {
         id: latestSubscriptionUsage.id,
@@ -179,16 +183,16 @@ const extractedPath = dirPath.substring(startIndex, endIndex);
       data: {
         clip_count: latestSubscriptionUsage.clip_count + clipsArray.length,
         upload_count: latestSubscriptionUsage.upload_count + 1,
-         
       },
     });
 
     console.log('All video clips have been processed and stored successfully.');
-    return  res.json({status:'clips created',message:'video clips created'})
+    return res.json({ status: 'clips created', message: 'video clips created' });
   } catch (err) {
     console.error('Error while processing video clips:', err);
   }
 });
+
 
 
       // python code end 

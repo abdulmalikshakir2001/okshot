@@ -46,18 +46,27 @@ const FetchingVideo: NextPageWithLayout = () => {
             </button>
             </Link>
 
-      {videoClips.map((clip, index) => (
+            {videoClips.map((clip, index) => (
   clip.clipSrc ? (
     <div key={index} style={{ marginBottom: '20px' }} >
-        <div className='flex  justify-center  gap-5'>
-            <div className='flex flex-col gap-3'>
-      <h3 className='text-center  text-bold text-gray-500'> <div className='flex justify-center items-center gap-2'> <span className='text-2xl uppercase font-bold text-gray-600 '>{t('title')}</span>  <span>{clip.title}</span> </div></h3>
-      <ReactPlayer url={clip.clipSrc}  controls={true} />
-      </div>
+      <div className='flex justify-center gap-5'>
+        <div className='flex flex-col gap-3'>
+          <h3 className='text-center text-bold text-gray-500'>
+            <div className='flex justify-center items-center gap-2'>
+              <span className='text-2xl uppercase font-bold text-gray-600'>{t('title')}</span>
+              <span>{clip.title}</span>
+            </div>
+          </h3>
+          <ReactPlayer 
+            url={`${clip.clipSrc}/clip_${index + 1}_subtitled.mp4`} 
+            controls={true} 
+          />
+        </div>
       </div>
     </div>
   ) : null
 ))}
+
     </div>
     </>
   );
