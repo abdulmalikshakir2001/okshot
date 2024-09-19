@@ -21,7 +21,7 @@ const FetchingVideo: NextPageWithLayout = ({
   const [loading,setLoading] = useState(false);
 
   const handleCreateClips = async () => {
-    // setLoading(true)
+    setLoading(true)
     axios.post('/api/videoClips/clips', {
       originalLink: originalLink,
       videoId: id,
