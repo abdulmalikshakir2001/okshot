@@ -7,6 +7,7 @@ import { IoDocumentTextOutline } from "react-icons/io5";
 import SubtitleEditor from "@/components/videoEditor/SubtitleEditor";
 import Timeline from "@/components/videoEditor/TimeLine";
 import { ImFolderDownload } from "react-icons/im";
+import { useRouter } from "next/router";
 
 interface Subtitle {
   startTime: number;
@@ -38,9 +39,9 @@ interface FontStyle {
 
 
 export default function Home() {
-  const [videoUrl, setVideoUrl] = useState<string>("/videos/video.mp4");
+  const [videoUrl, setVideoUrl] = useState<string>(" ");
   const [subtitlesUrl, setSubtitlesUrl] = useState<string>(
-    "/subtitles/subtitle.srt"
+    "/subtitles/subtitle1.srt"
   );
   const [processedVideoUrl, setProcessedVideoUrl] = useState<string | null>(
     null
@@ -99,6 +100,14 @@ export default function Home() {
   const [startTime, setStartTime] = useState<number>(0);
   const [endTime, setEndTime] = useState<number>(0);
   const [highlightedWordIndex, setHighlightedWordIndex] = useState<number | null>(null);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (router.query.src) {
+      setVideoUrl(router.query.src as string); // Retrieve the `src` from the query
+    }
+  }, [router.query.src]);
 
   const handleCutVideo = (start: number, end: number) => {
     setStartTime(start);

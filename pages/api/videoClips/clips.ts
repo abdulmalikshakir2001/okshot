@@ -34,7 +34,10 @@ export default async function handler(
 // Handle POST request to create a video
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
 
-      const {  originalLink,videoId}: any = req.body;
+      const {  originalLink,videoId, timeFrameRange, duration, language, aiInstructions, toggleStates}: any = req.body;
+
+      console.log("the data is coming from frontend : => \n", "video link: ",originalLink, "\nvieo id : ",videoId, "\nTime frame : ",timeFrameRange, "\nDuration is : ",duration, "\nLangauge is : ",language, "\nAI Instruction is : ",aiInstructions, "\ntoggle buttons values : ",toggleStates )
+
       const session = await getSession(req,res)
       //  check usage
 const subscription = await prisma.subscriptions.findFirst({
