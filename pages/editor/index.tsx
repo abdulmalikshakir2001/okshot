@@ -120,8 +120,8 @@ export default function Home() {
           const response = await axios.post("/api/videoClips/getClip", { momentId });
           const momentData = response.data;
           setMomentData(momentData.data);
-          if (momentData.clipSubtitledSrc) {
-            setVideoUrl(momentData.clipSubtitledSrc); // Ensure this is set after fetching
+          if (momentData.clipSrc) {
+            setVideoUrl(momentData.clipSrc); // Ensure this is set after fetching
           }
         } catch (error) {
           console.error("Failed to fetch moment data:", error);
@@ -253,7 +253,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-           videoUrl :momentData.clipSubtitledSrc,
+           videoUrl :momentData.clipSrc,
           subtitlesUrl,
           subtitlesContent,
           selectedRatio,
@@ -496,7 +496,7 @@ export default function Home() {
         <div className="w-[400px] h-[400px] flex items-center justify-center mb-5 mt-5 relative">
           <div className={`${getAspectRatioStyle()} relative overflow-hidden`}>
             <video
-              src={momentData &&  momentData.clipSubtitledSrc}
+              src={momentData &&  momentData.clipSrc}
               ref={videoRef}
               className={`${getAspectRatioStyle()}`}
             />
@@ -528,7 +528,7 @@ export default function Home() {
       </div>
       <div className="w-full">
         <Timeline 
-        videoUrl={momentData && momentData.clipSubtitledSrc} 
+        videoUrl={momentData && momentData.clipSrc} 
         videoRef={videoRef} 
         onCutVideo={handleCutVideo} 
         subtitles={subtitles}

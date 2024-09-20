@@ -1,23 +1,34 @@
-# Use an official Node.js runtime as the base image
-FROM node:20.9.0
+# Base image with Node.js 20.8.0 on Ubuntu
+FROM node:20.8.0-bullseye-slim as base
 
-# Set working directory
+# Install Python, pip, FFmpeg, and Git dependencies
+RUN apt-get update
+RUN apt-get install -y python3 python3-venv python3-pip ffmpeg git
+RUN apt-get clean
+RUN rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+# Copy the Python virtual environment requirements
+COPY ./requirements.txt .
 
-# Install dependencies
-RUN npm ci
+# Set up Python virtual environment
+RUN python3 -m venv /app/myenv
+RUN /app/myenv/bin/pip install --upgrade pip
+RUN /app/myenv/bin/pip install -r requirements.txt
 
-# Copy the rest of the application code to the working directory
+# Copy package.json and package-lock.json to install npm dependencies
+COPY ./package.json ./package-lock.json ./
+
+# Install npm packages
+RUN npm install
+
+# Copy the rest of the application code
 COPY . .
 
-# Build the Next.js application
-RUN npm run build
+# Expose the port used by Next.js (4002 in your case)
+EXPOSE 4002
 
-# Expose the port the app runs on
-EXPOSE 3000
-
-# Start the application with both build and dev commands
-CMD ["sh", "-c", "npm run build && npm run dev"]
+# Run the db setup and then start the application
+CMD ["sh", "-c", "npm run db:setup && npm run dev"]

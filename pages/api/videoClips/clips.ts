@@ -115,7 +115,7 @@ console.log('Folder path:', folderPath);
         highlight_bg_color: "&H00FFC0CB",
         bg_radius: 3,
         fontname: "Arial",
-        fontsize: 12,
+        fontsize: 20,
         primary_color: "&H00FFFFFF",
         secondary_color: "&H000000FF",
         outline_color: "&H00FFFFFF",
