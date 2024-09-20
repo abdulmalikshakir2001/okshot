@@ -34,7 +34,7 @@ const FetchingVideo: NextPageWithLayout = () => {
   const handleEditClick = (clipSrc: string) => {
     router.push({
       pathname: '/editor',
-      query: { src: clipSrc },  // Pass clipSrc as query parameter
+      query: { moment: clipSrc },  // Pass clipSrc as query parameter
     });
   };
 
@@ -78,7 +78,7 @@ const FetchingVideo: NextPageWithLayout = () => {
                     </h3>
                     <div className='flex gap-3 mt-3'>
 
-                        <button onClick={() => handleEditClick(clip.clipSubtitledSrc)}  className='bg-blue-500 flex justify-center items-center gap-2 text-white px-4 py-2 rounded'> <IoFilmOutline />  Edit</button>
+                        <button onClick={() => handleEditClick(clip.id)}  className='bg-blue-500 flex justify-center items-center gap-2 text-white px-4 py-2 rounded'> <IoFilmOutline />  Edit</button>
 
                         <a
                           href={clip.clipSrc}

@@ -8,7 +8,7 @@ import SubtitleEditor from "@/components/videoEditor/SubtitleEditor";
 import Timeline from "@/components/videoEditor/TimeLine";
 import { ImFolderDownload } from "react-icons/im";
 import { useRouter } from "next/router";
-
+import axios from "axios";
 interface Subtitle {
   startTime: number;
   endTime: number;
@@ -40,12 +40,14 @@ interface FontStyle {
 
 export default function Home() {
   const [videoUrl, setVideoUrl] = useState<string>(" ");
+  const [momentData, setMomentData] = useState<any>(null);
   const [subtitlesUrl, setSubtitlesUrl] = useState<string>(
-    "/subtitles/subtitle1.srt"
+    momentData && momentData.srtSrc
   );
   const [processedVideoUrl, setProcessedVideoUrl] = useState<string | null>(
     null
   );
+  
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [subtitlesContent, setSubtitlesContent] = useState<string>("");
   const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
@@ -103,11 +105,38 @@ export default function Home() {
 
   const router = useRouter();
 
+  // useEffect(() => {
+  //   if (router.query.src) {
+  //     setVideoUrl(router.query.src as string); // Retrieve the `src` from the query
+  //   }
+  // }, [router.query.src]);
   useEffect(() => {
-    if (router.query.src) {
-      setVideoUrl(router.query.src as string); // Retrieve the `src` from the query
+    if (router.query.moment) {
+      const momentId = router.query.moment as string;
+
+      // Send a POST request to get the video clip data by moment id
+      const fetchClipData = async (momentId: string) => {
+        try {
+          const response = await axios.post("/api/videoClips/getClip", { momentId });
+          const momentData = response.data;
+          setMomentData(momentData.data);
+          if (momentData.clipSubtitledSrc) {
+            setVideoUrl(momentData.clipSubtitledSrc); // Ensure this is set after fetching
+          }
+        } catch (error) {
+          console.error("Failed to fetch moment data:", error);
+        }
+      };
+
+      fetchClipData(momentId); // Call the function when the moment query param is present
     }
-  }, [router.query.src]);
+  }, [router.query.moment]);
+  useEffect(()=>{
+    setSubtitlesUrl(momentData &&  momentData.srtSrc)
+
+  },[momentData,subtitlesUrl])
+ 
+
 
   const handleCutVideo = (start: number, end: number) => {
     setStartTime(start);
@@ -130,7 +159,7 @@ export default function Home() {
       }
     };
     fetchAndParseSubtitles();
-  }, [subtitlesUrl]);
+  }, [subtitlesUrl ]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -224,7 +253,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          videoUrl,
+           videoUrl :momentData.clipSubtitledSrc,
           subtitlesUrl,
           subtitlesContent,
           selectedRatio,
@@ -467,7 +496,7 @@ export default function Home() {
         <div className="w-[400px] h-[400px] flex items-center justify-center mb-5 mt-5 relative">
           <div className={`${getAspectRatioStyle()} relative overflow-hidden`}>
             <video
-              src={videoUrl}
+              src={momentData &&  momentData.clipSubtitledSrc}
               ref={videoRef}
               className={`${getAspectRatioStyle()}`}
             />
@@ -499,7 +528,7 @@ export default function Home() {
       </div>
       <div className="w-full">
         <Timeline 
-        videoUrl={videoUrl} 
+        videoUrl={momentData && momentData.clipSubtitledSrc} 
         videoRef={videoRef} 
         onCutVideo={handleCutVideo} 
         subtitles={subtitles}
