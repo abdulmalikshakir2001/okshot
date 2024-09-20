@@ -5,7 +5,8 @@
 /.pnp
 .pnp.js
 yarn.lock
-
+/myenv
+public/videos
 # testing
 /coverage
 
