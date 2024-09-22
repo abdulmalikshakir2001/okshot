@@ -1,83 +1,186 @@
-    <div className="container mx-auto pt-[50px] max-w-full px-4 sm:px-6 lg:px-8">
-      {currentSubscription && currentSubscription.cancelAt && (
-        <div
-          className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6"
-          role="alert"
-        >
-          <p className="font-bold">{t('subscription-cancelled')}</p>
-          <p>
-            {t('your-subscription-will-end-on')}:{' '}
-            {new Date(currentSubscription.cancelAt).toLocaleDateString()}
-          </p>
-        </div>
-      )}
-      {currentSubscription ? (
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-          <div className="mb-4 flex flex-col sm:flex-row items-center justify-center text-center">
-            <h2 className="text-2xl font-bold text-gray-900">
-              {currentSubscription?.subscriptionPackage?.subscription_type}
-            </h2>
-            <p className="text-sm pt-2 pl-2">
-              ({currentSubscription?.subscriptionPackage?.sub_dur_type})
-            </p>
-          </div>
-          {renderUsage()}
-          <div className="flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4">
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full sm:w-auto pr-[8rem] pl-[8rem] py-2.5 px-5 me-2 mb-2 text-sm font-bold text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-red-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-              disabled={currentSubscription && currentSubscription.cancelAt}
-            >
-              {t('cancel')}
-            </button>
-            <Link href="/dashboard/manageSubscription/upgradeSubscription">
-              <button
-                className="w-full sm:w-auto pr-[8rem] pl-[8rem] bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
-                disabled={currentSubscription && currentSubscription.cancelAt}
-              >
-                {t('upgrade')}
-              </button>
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-white shadow-md rounded-lg p-6 mb-6 text-center max-w-full">
-          <p className="text-lg font-bold text-gray-900 mb-4">
-            {t('no-subscription')}
-          </p>
-          <Link href="/pricing">
-            <button className="w-full sm:w-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-              {t('get-started')}
-            </button>
-          </Link>
-        </div>
-      )}
+docker -------->
+# Use an official Node.js image as the base image
+FROM node:20.8.0
 
-      <ConfirmationModal
-        isOpen={showDeleteConfirm}
-        title={t('Confirmation')}
-        message={t('Are you sure you want to Delete')}
-        onConfirm={handleDelete}
-        onCancel={() => setShowDeleteConfirm(false)}
-      />
+# Install the latest version of Python and global dependencies (FFmpeg, Git, etc.)
+RUN apt-get update
+RUN apt-get install -y python3 python3-venv python3-pip
+RUN apt-get install -y ffmpeg
+RUN apt-get install -y git
 
-      {loading && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <svg
-            className="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
-            viewBox="0 0 100 101"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-              fill="currentColor"
-            />
-            <path
-              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2611 1.69443 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5685 10.4717 44.0642 10.1071C47.8517 9.53638 51.7191 9.52633 55.5407 10.0869C60.8788 10.8577 65.9923 12.7195 70.6331 15.5806C75.2738 18.4418 79.342 22.2395 82.5849 26.746C84.9136 29.966 86.7992 33.4786 88.1813 37.2334C89.083 39.583 91.5423 40.9164 93.9676 39.0409Z"
-              fill="currentFill"
-            />
-          </svg>
-        </div>
-      )}
-    </div>
+# Set the working directory inside the container
+WORKDIR /app
+
+# Create and activate a Python virtual environment
+RUN python3 -m venv /myenv
+ENV PATH="/myenv/bin:$PATH"
+
+# Install Python dependencies in the virtual environment
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy package.json and package-lock.json first to leverage Docker cache
+COPY package.json package-lock.json ./
+
+# Increase NPM timeout and retry installation on failure
+RUN npm config set fetch-retries 5 \
+    && npm config set fetch-retry-mintimeout 20000 \
+    && npm config set fetch-retry-maxtimeout 120000
+
+# Run npm install with retry on failure
+RUN npm install || npm install || npm install
+
+# Copy the remaining app files
+COPY . .
+
+# Set environment variables from the .env file
+ENV NEXTAUTH_URL=http://localhost:4002
+ENV NEXTAUTH_SECRET=rZTFtfNuSMajLnfFrWT2PZ3lX8WZv7W/Xs2H8hkEY6g=
+ENV SMTP_HOST=sandbox.smtp.mailtrap.io
+ENV SMTP_PORT=2525
+ENV SMTP_USER=b09b4a458f0e64
+ENV SMTP_PASSWORD=bb22d7134c93d2
+ENV SMTP_FROM='abdulmalikshakir2001@gmail.com'
+ENV DATABASE_URL=postgresql://postgres:postgres@localhost:5432/aivideo
+ENV APP_URL=http://localhost:4002
+ENV SVIX_URL=https://api.eu.svix.com
+ENV SVIX_API_KEY=testsk_Q7EV6PtPGn7v_MKEsH9CokVMnBiJsWfK.eu
+ENV GITHUB_CLIENT_ID=Ov23liMjCOjX8QglQjZY
+ENV GITHUB_CLIENT_SECRET=c512bfa75910ee5fda898ac2c3a3fc6b1ccae45f
+ENV GOOGLE_CLIENT_ID=894704109053-u7b5fhsks1tkhpen3tsm38j63mictdit.apps.googleusercontent.com
+ENV GOOGLE_CLIENT_SECRET=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
+ENV RETRACED_URL=
+ENV RETRACED_API_KEY=
+ENV RETRACED_PROJECT_ID=
+ENV HIDE_LANDING_PAGE=false
+ENV GROUP_PREFIX=boxyhq-
+ENV CONFIRM_EMAIL=false
+ENV DISABLE_NON_BUSINESS_EMAIL_SIGNUP=false
+ENV NEXT_PUBLIC_MIXPANEL_TOKEN=
+ENV AUTH_PROVIDERS=
+ENV OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=
+ENV OTEL_EXPORTER_OTLP_METRICS_HEADERS=
+ENV OTEL_EXPORTER_OTLP_METRICS_PROTOCOL=grpc
+ENV OTEL_EXPORTER_DEBUG=true
+ENV OTEL_PREFIX=boxyhq.saas
+ENV NEXT_PUBLIC_TERMS_URL='/terms'
+ENV NEXT_PUBLIC_PRIVACY_URL='/privacy'
+ENV NEXT_PUBLIC_DARK_MODE=false
+ENV FEATURE_TEAM_SSO=true
+ENV FEATURE_TEAM_DSYNC=true
+ENV FEATURE_TEAM_AUDIT_LOG=true
+ENV FEATURE_TEAM_WEBHOOK=true
+ENV FEATURE_TEAM_API_KEY=true
+ENV FEATURE_TEAM_DELETION=true
+ENV FEATURE_TEAM_PAYMENTS=true
+ENV RECAPTCHA_SITE_KEY=
+ENV RECAPTCHA_SECRET_KEY=
+ENV NEXTAUTH_SESSION_STRATEGY=jwt
+ENV NEXT_PUBLIC_SENTRY_DSN=
+ENV NEXT_PUBLIC_SENTRY_TRACE_SAMPLE_RATE=0.0
+ENV SENTRY_RELEASE=
+ENV SENTRY_ENVIRONMENT=
+ENV SENTRY_URL=
+ENV SENTRY_ORG=
+ENV SENTRY_PROJECT=
+ENV SENTRY_AUTH_TOKEN=
+ENV MAX_LOGIN_ATTEMPTS=5
+ENV SLACK_WEBHOOK_URL=
+ENV STRIPE_SECRET_KEY=sk_test_51PQTZD2MXTg6eduPg7y3VWnmQbzLR23BSx6TRde6TYNteFnmrQwThtRndCzYYccbj824pifkK1sh0eZiUpAFVnMp00FLzxjKOc
+ENV STRIPE_WEBHOOK_SECRET=whsec_a2555d34d716c1da72e3899ea18fc318bb6ffae9e700825cd4a4d18fb12d7330
+ENV NEXT_PUBLIC_SUPPORT_URL=
+
+# Expose the port
+EXPOSE 4002
+
+# Add logging to check the db:setup command
+RUN echo "Running db:setup..."
+# Start the Next.js app in development mode after running db:setup
+CMD ["sh", "-c", " npm run dev"]
+
+docker file ---->
+
+docker compose file ------->
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "4002:4002"
+    environment:
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+      DATABASE_URL: ${DATABASE_URL}
+      APP_URL: ${APP_URL}
+      SVIX_URL: ${SVIX_URL}
+      SVIX_API_KEY: ${SVIX_API_KEY}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      RETRACED_URL: ${RETRACED_URL}
+      RETRACED_API_KEY: ${RETRACED_API_KEY}
+      RETRACED_PROJECT_ID: ${RETRACED_PROJECT_ID}
+      HIDE_LANDING_PAGE: ${HIDE_LANDING_PAGE}
+      GROUP_PREFIX: ${GROUP_PREFIX}
+      CONFIRM_EMAIL: ${CONFIRM_EMAIL}
+      DISABLE_NON_BUSINESS_EMAIL_SIGNUP: ${DISABLE_NON_BUSINESS_EMAIL_SIGNUP}
+      NEXT_PUBLIC_MIXPANEL_TOKEN: ${NEXT_PUBLIC_MIXPANEL_TOKEN}
+      AUTH_PROVIDERS: ${AUTH_PROVIDERS}
+      OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT}
+      OTEL_EXPORTER_OTLP_METRICS_HEADERS: ${OTEL_EXPORTER_OTLP_METRICS_HEADERS}
+      OTEL_EXPORTER_OTLP_METRICS_PROTOCOL: ${OTEL_EXPORTER_OTLP_METRICS_PROTOCOL}
+      OTEL_EXPORTER_DEBUG: ${OTEL_EXPORTER_DEBUG}
+      OTEL_PREFIX: ${OTEL_PREFIX}
+      NEXT_PUBLIC_TERMS_URL: ${NEXT_PUBLIC_TERMS_URL}
+      NEXT_PUBLIC_PRIVACY_URL: ${NEXT_PUBLIC_PRIVACY_URL}
+      NEXT_PUBLIC_DARK_MODE: ${NEXT_PUBLIC_DARK_MODE}
+      FEATURE_TEAM_SSO: ${FEATURE_TEAM_SSO}
+      FEATURE_TEAM_DSYNC: ${FEATURE_TEAM_DSYNC}
+      FEATURE_TEAM_AUDIT_LOG: ${FEATURE_TEAM_AUDIT_LOG}
+      FEATURE_TEAM_WEBHOOK: ${FEATURE_TEAM_WEBHOOK}
+      FEATURE_TEAM_API_KEY: ${FEATURE_TEAM_API_KEY}
+      FEATURE_TEAM_DELETION: ${FEATURE_TEAM_DELETION}
+      FEATURE_TEAM_PAYMENTS: ${FEATURE_TEAM_PAYMENTS}
+      RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY}
+      RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY}
+      NEXTAUTH_SESSION_STRATEGY: ${NEXTAUTH_SESSION_STRATEGY}
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN}
+      NEXT_PUBLIC_SENTRY_TRACE_SAMPLE_RATE: ${NEXT_PUBLIC_SENTRY_TRACE_SAMPLE_RATE}
+      SENTRY_RELEASE: ${SENTRY_RELEASE}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT}
+      SENTRY_URL: ${SENTRY_URL}
+      SENTRY_ORG: ${SENTRY_ORG}
+      SENTRY_PROJECT: ${SENTRY_PROJECT}
+      SENTRY_AUTH_TOKEN: ${SENTRY_AUTH_TOKEN}
+      MAX_LOGIN_ATTEMPTS: ${MAX_LOGIN_ATTEMPTS}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      NEXT_PUBLIC_SUPPORT_URL: ${NEXT_PUBLIC_SUPPORT_URL}
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    command: npm run dev
+
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aivideo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
