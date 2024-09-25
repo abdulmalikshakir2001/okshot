@@ -9,6 +9,7 @@ yarn.lock
 public/videos/*.mp4
 public/videos/
 /videos
+/files
 
 # testing
 /coverage

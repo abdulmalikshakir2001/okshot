@@ -184,3 +184,33 @@ services:
 
 volumes:
   postgres_data:
+
+
+
+
+
+
+
+
+
+
+[Script Info]
+; This is an Advanced Sub Station Alpha v4+ script.
+Title: 
+ScriptType: v4.00+
+PlayDepth: 0
+ScaledBorderAndShadow: Yes
+PlayResX: 1280
+PlayResY: 720
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,50,&H00FFFFFF,&H0000FFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,1,2,10,10,10,1
+Style: SE-box-bg,Arial,20,&H37FC00FF,&H9B000000,&H37505050,&H9B000000,0,0,0,0,100,100,0,0,1,0,0,7,0,0,0,1
+Style: SE-box-bg845,Arial,20,&H37FC00FF,&H9B000000,&H37505050,&H9B000000,0,0,0,0,100,100,0,0,1,0,0,7,0,0,0,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:01.00,0:00:05.00,Default,,0,0,0,,Malik
+Dialogue: -11893,0:00:01.00,0:00:05.00,SE-box-bg,,0,0,0,,{\p1}m 575 654 l 709 654 709 715 575 715{\p0}
+Dialogue: -19668,0:00:01.00,0:00:05.00,SE-box-bg845,,0,0,0,,{\p1}m 605 654 b 575 654 575 654 575 684 l 575 685 b 575 715 575 715  605 715 l 679 715 b 709 715 709 715 709 685 l 709 685 709 684 b 709 654 709 654 679 654 l  605 654{\p0}
