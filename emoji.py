@@ -3,30 +3,36 @@ import ffmpeg
 import random
 import os
 import gc
+import torch
+from transformers import pipeline  # EmoRoBERTa model for emotion detection
 
+# Load EmoRoBERTa pipeline for emotion detection
+emotion_model = pipeline("text-classification", model="arpanghoshal/EmoRoBERTa", return_all_scores=True)
 
 # Configuration object for paths and subtitle styles
 config = {
-    "device": "cpu",  # Changing to CPU
+    "device": "cpu",
     "video_file": "ai_python.mp4",  # Input video file
-    "audio_file": "extracted_audio.mp3",  # Output audio file
+    "audio_file": "extracted_audio.mp3",  # Extracted audio file
     "output_folder": "files",  # Directory for output files
     "batch_size": 16,
-    "compute_type": "int8",  # Set to int8 for lower memory usage on CPU
+    "compute_type": "int8",  # Set to int8 for lower memory usage
     "srt_file": "output.srt",  # SRT subtitle file name
     "ass_file": "output.ass",  # ASS subtitle file name
-    "output_video": "output.mp4",  # Final output video with burned subtitles
+    "output_video": "output.mp4",  # Final output video with burned subtitles and overlays
+    "emoji": True,  # Option to enable or disable emoji overlay
+    "emoji_position": {"x": "(W-w)/2", "y": "(H-h)/2"},  # Default emoji position at center
     "min_words": 4,  # Minimum words per subtitle
     "max_words": 8,  # Maximum words per subtitle
-
-    # Subtitle style for ASS file
+    "image_folder": "file_gallary",  # Path for emotion PNG images
+    "image_size": 70,  # Size of PNG image to overlay
     "font": {
         "fontname": "Arial",
         "fontsize": 20,
-        "primary_color": "&H00FFFFFF",  # White text for non-highlighted words
+        "primary_color": "&H00FFFFFF",  # White text
         "highlight_color": "&H0000FF00",  # Green text for highlighted word
-        "outline_color": "&H00000000",  # Black outline for both highlighted and non-highlighted
-        "back_color": "&H00000000",  # No background for non-highlighted words
+        "outline_color": "&H00000000",  # Black outline
+        "back_color": "&H00000000",  # No background
         "highlight_bg_color": "&H00FFC0CB",  # Pink background for highlighted word
         "bold": -1,
         "italic": 0,
@@ -72,8 +78,14 @@ def diarization(result, config):
     diarize_segments = diarize_model(config["audio_file"])
     return whisperx.assign_word_speakers(diarize_segments, result)
 
-# Step 5: Generate grouped subtitles based on min and max words
-def generate_subtitles_grouped(segments, config):
+# Step 5: Detect emotion using EmoRoBERTa model
+def detect_emotion(text):
+    result = emotion_model(text)
+    emotion = max(result[0], key=lambda x: x['score'])['label'].lower()
+    return emotion
+
+# Step 6: Generate grouped subtitles with emotions
+def generate_subtitles_with_emotions(segments, config):
     grouped_segments = []
     for segment in segments:
         words = segment["words"]
@@ -82,28 +94,31 @@ def generate_subtitles_grouped(segments, config):
         while index < len(words):
             group_size = random.randint(config["min_words"], config["max_words"])
             group = words[index:index + group_size]
-
-            # Filter out words without 'start' and 'end' keys
             valid_group = [word for word in group if 'start' in word and 'end' in word]
 
-            # Ensure there's at least one valid word with start and end time
             if not valid_group:
                 index += group_size
                 continue
+
             start_time = valid_group[0]['start']
             end_time = valid_group[-1]['end']
             text = ' '.join([word['word'] for word in group])
+
+            # Detect emotion for this group
+            emotion = detect_emotion(text) if config['emoji'] else None
+            
             grouped_segments.append({
                 "start": start_time,
                 "end": end_time,
                 "text": text,
+                "emotion": emotion,  # Store detected emotion only if emoji option is enabled
                 "words": group
             })
             index += group_size
 
     return grouped_segments
 
-# Step 6: Generate the ASS file with highlighted background for the current word
+# Step 7: Generate ASS subtitle file
 def generate_ass_highlighted(grouped_segments, config):
     ass_file_path = os.path.join(config["output_folder"], config["ass_file"])
     with open(ass_file_path, 'w', encoding='utf-8') as ass_file:
@@ -126,7 +141,6 @@ def generate_ass_highlighted(grouped_segments, config):
         for segment in grouped_segments:
             words = segment["words"]
             for i, word in enumerate(words):
-                # Check if 'start' and 'end' keys exist
                 if 'start' not in word or 'end' not in word:
                     continue
 
@@ -138,13 +152,11 @@ def generate_ass_highlighted(grouped_segments, config):
                 for j, w in enumerate(words):
                     if 'start' in w and 'end' in w:
                         if j == i:
-                            # Apply highlight to the entire word with pink background and green text
                             highlighted_text += f"{{\\rHighlighted}}{w['word']} "
                         else:
-                            # Apply default style for the rest of the words in the group (white text)
                             highlighted_text += f"{{\\rDefault}}{w['word']} "
 
-                # Convert start and end time to ASS time format (h:mm:ss.xx)
+                # Convert start and end time to ASS time format
                 start_ass_time = f"{int(start_time // 3600)}:{int((start_time % 3600) // 60)}:{start_time % 60:.2f}".replace('.', ',')
                 end_ass_time = f"{int(end_time // 3600)}:{int((end_time % 3600) // 60)}:{end_time % 60:.2f}".replace('.', ',')
 
@@ -153,7 +165,7 @@ def generate_ass_highlighted(grouped_segments, config):
         
         print(f"ASS file generated with background highlight: {ass_file_path}")
 
-# Step 7: Generate SRT file
+# Step 8: Generate SRT file
 def generate_srt_file(grouped_segments, config):
     srt_file_path = os.path.join(config["output_folder"], config["srt_file"])
     with open(srt_file_path, 'w', encoding='utf-8') as srt_file:
@@ -161,7 +173,7 @@ def generate_srt_file(grouped_segments, config):
             start_time = segment['start']
             end_time = segment['end']
 
-            # Convert to SRT time format: 00:00:00,000
+            # Convert to SRT time format
             start_srt_time = f"{int(start_time // 3600):02}:{int((start_time % 3600) // 60):02}:{start_time % 60:.3f}".replace('.', ',')
             end_srt_time = f"{int(end_time // 3600):02}:{int((end_time % 3600) // 60):02}:{end_time % 60:.3f}".replace('.', ',')
 
@@ -169,37 +181,87 @@ def generate_srt_file(grouped_segments, config):
         
         print(f"SRT file generated: {srt_file_path}")
 
-# Step 8: Burn the ASS subtitles into the video
+# Step 9: Burn subtitles into the video
 def burn_subtitles(config):
     video_input_path = config["video_file"]
     ass_file_path = os.path.join(config["output_folder"], config["ass_file"])
-    output_video_path = os.path.join(config["output_folder"], config["output_video"])
+    output_subtitled_video = os.path.join(config["output_folder"], "output_with_subtitles.mp4")
 
     # Use ffmpeg to burn the subtitles into the video
-    ffmpeg.input(video_input_path).output(output_video_path, vf=f"subtitles={ass_file_path}").run()
-    print(f"Video with subtitles burned saved as: {output_video_path}")
+    ffmpeg.input(video_input_path).output(output_subtitled_video, vf=f"subtitles={ass_file_path}").run()
+    print(f"Video with subtitles burned saved as: {output_subtitled_video}")
 
-# Execution steps
+    return output_subtitled_video
+
+# Step 10: Overlay emotion images on the subtitled video if emoji option is enabled
+def overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitled_video):
+    if not config.get("emoji"):
+        print("Emoji overlay is disabled. Skipping emoji overlay.")
+        return subtitled_video
+
+    output_video_path = os.path.join(config["output_folder"], config["output_video"])
+
+    # Start building the filter_complex graph for ffmpeg using the subtitled video
+    video_stream = ffmpeg.input(subtitled_video)
+    current_stream = video_stream
+    input_streams = [video_stream]
+
+    # Add each emotion PNG as an overlay at its corresponding time
+    for index, segment in enumerate(grouped_segments):
+        emotion = segment['emotion']
+        start_time = segment['start']
+        end_time = segment['end']
+
+        # Determine the PNG file path for the detected emotion
+        png_file = os.path.join(config["image_folder"], f"{emotion}.png")
+
+        if os.path.exists(png_file):
+            # Load the image file as another input stream
+            image_stream = ffmpeg.input(png_file, loop=1, t=end_time - start_time, s=f"{config['image_size']}x{config['image_size']}")
+            input_streams.append(image_stream)
+
+            # Apply the overlay filter sequentially
+            # Emoji will be centered by default, but the position can be controlled via config
+            emoji_x = config.get("emoji_position", {}).get("x", "(W-w)/2")
+            emoji_y = config.get("emoji_position", {}).get("y", "(H-h)/2")
+
+            current_stream = ffmpeg.overlay(current_stream, image_stream, x=emoji_x, y=emoji_y, enable=f"between(t,{start_time},{end_time})")
+    
+    # Apply the final overlay to the subtitled video and output the result
+    current_stream.output(output_video_path).run()
+
+    print(f"Final video with emotion PNG overlays saved as: {output_video_path}")
+    return output_video_path
+
+
+# Execution Steps
+
+# 1. Extract Audio
 extract_audio(config)
+
+# 2. Transcribe Audio
 result = transcribe_audio(config)
+
+# 3. Align Transcription
 aligned_result = align_transcription(result, config)
+
+# 4. Perform Diarization
 diarized_result = diarization(aligned_result, config)
-print('==========================================================================================>>')
-print(diarized_result)
-print('==========================================================================================>>')
 
+# 5. Group subtitles by min/max word count and add emotion detection
+grouped_segments = generate_subtitles_with_emotions(diarized_result["segments"], config)
 
-# Group subtitles by min/max word count and ensure continuous display
-grouped_segments = generate_subtitles_grouped(diarized_result["segments"], config)
-
-# Generate ASS file with highlighted words
+# 6. Generate ASS file with highlighted words
 generate_ass_highlighted(grouped_segments, config)
 
-# Generate SRT file
+# 7. Generate SRT file
 generate_srt_file(grouped_segments, config)
 
-# Burn subtitles to the video
-burn_subtitles(config)
+# 8. Burn subtitles into the video
+subtitled_video = burn_subtitles(config)
+
+# 9. Overlay emotion PNGs on top of the subtitled video, if enabled
+final_output = overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitled_video)
 
 # Optional: Cleanup
 gc.collect()
