@@ -1,10 +1,11 @@
+import os
 import whisperx
 import ffmpeg
 import random
-import os
 import gc
 import torch
 from transformers import pipeline  # EmoRoBERTa model for emotion detection
+from clipsai import resize, MediaEditor, AudioVideoFile
 
 # Load EmoRoBERTa pipeline for emotion detection
 emotion_model = pipeline("text-classification", model="arpanghoshal/EmoRoBERTa", return_all_scores=True)
@@ -54,17 +55,53 @@ config = {
     "background_music": True,  # Option to enable or disable background music
     "music_volume": 1.0,  # Volume control for background music
     "music_file": "file_music/one.mp3",  # Background music file
+    "cropping": False,  # Enable or disable cropping
 }
 
 # Create the output folder if it doesn't exist
 if not os.path.exists(config["output_folder"]):
     os.makedirs(config["output_folder"])
-# Step 1: Extract audio from video
+
+# Resize the video based on the cropping setting
+def resize_video_if_needed(config):
+    if config.get("cropping"):
+        input_video = config["video_file"]
+        output_video = os.path.join(config["output_folder"], "cropped_video.mp4")
+        # Resizing logic using clipsai
+        video_file_path = os.path.abspath(input_video)
+        output_file_path = os.path.abspath(output_video)
+
+        # Resizing the video to the desired aspect ratio (9:16 here)
+        crops = resize(
+            video_file_path=video_file_path,
+            pyannote_auth_token="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",  # Change if required
+            aspect_ratio=(9, 16)  # Adjusted to 9:16 aspect ratio
+        )
+
+        # Log the crop segments for debugging
+        print("Crops: ", crops.segments)
+
+        # Initialize media editor
+        media_editor = MediaEditor()
+
+        # Assuming the file contains both audio and video streams
+        media_file = AudioVideoFile(video_file_path)
+
+        # Resize the video based on the crop information
+        resized_video_file = media_editor.resize_video(
+            original_video_file=media_file,
+            resized_video_file_path=output_file_path,
+            width=crops.crop_width,
+            height=crops.crop_height,
+            segments=crops.to_dict()["segments"],
+        )
+
+        print(f"Cropped video saved to: {output_file_path}")
+        return output_file_path
+    return None
+
+# Step 1: Extract Audio
 def extract_audio(config):
-    # Create the output folder if it doesn't exist
-    if not os.path.exists(config["output_folder"]):
-        os.makedirs(config["output_folder"])
-        print(f"Created directory: {config['output_folder']}")
     # Ensure the audio file is saved in the correct directory
     audio_file_path = os.path.join(config["output_folder"], config["audio_file"])
 
@@ -74,20 +111,18 @@ def extract_audio(config):
     print(f"Audio extracted and saved at: {audio_file_path}")
     return audio_file_path
 
-# Step 2: Load WhisperX model and transcribe audio
+# Step 2: Transcribe Audio
 def transcribe_audio(config):
     model = whisperx.load_model("large-v2", config["device"], compute_type=config["compute_type"])
-    audio = whisperx.load_audio(os.path.join(config["output_folder"], config["audio_file"])
-)
+    audio = whisperx.load_audio(os.path.join(config["output_folder"], config["audio_file"]))
     return model.transcribe(audio, batch_size=config["batch_size"])
 
-# Step 3: Align the transcription
+# Step 3: Align Transcription
 def align_transcription(result, config):
     model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=config["device"])
-    return whisperx.align(result["segments"], model_a, metadata, os.path.join(config["output_folder"], config["audio_file"])
-, device=config["device"], return_char_alignments=False)
+    return whisperx.align(result["segments"], model_a, metadata, os.path.join(config["output_folder"], config["audio_file"]), device=config["device"], return_char_alignments=False)
 
-# Step 4: Perform speaker diarization
+# Step 4: Perform Diarization
 def diarization(result, config):
     diarize_model = whisperx.DiarizationPipeline(use_auth_token="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", device=config["device"])
     diarize_segments = diarize_model(os.path.join(config["output_folder"], config["audio_file"]))
@@ -199,6 +234,16 @@ def generate_srt_file(grouped_segments, config):
 # Step 9: Burn subtitles into the video
 def burn_subtitles(config):
     video_input_path = config["video_file"]
+    
+    # Check if cropping is enabled
+    if config.get("cropping"):
+        cropped_video_path = os.path.join(config["output_folder"], "cropped_video.mp4")
+        if os.path.exists(cropped_video_path):
+            video_input_path = cropped_video_path
+            print(f"Using cropped video for burning subtitles: {video_input_path}")
+        else:
+            print(f"Cropped video not found. Using original video.")
+    
     ass_file_path = os.path.join(config["output_folder"], config["ass_file"])
     output_subtitled_video = os.path.join(config["output_folder"], config["output_video"])
 
@@ -262,8 +307,7 @@ def overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitle
 # Step 11: Add background music or retain original audio
 def add_background_music(subtitled_video, config):
     video_input = ffmpeg.input(subtitled_video)
-    audio_input = ffmpeg.input(os.path.join(config["output_folder"], config["audio_file"])
-)
+    audio_input = ffmpeg.input(os.path.join(config["output_folder"], config["audio_file"]))
 
     temp_output_path = os.path.join(config["output_folder"], "temp_output.mp4")  # Temporary output file
     output_final = os.path.join(config["output_folder"], config["output_video"])  # Final output path
@@ -308,6 +352,9 @@ def add_background_music(subtitled_video, config):
 
 
 # Execution Steps
+
+# Resize video if cropping is enabled
+cropped_video = resize_video_if_needed(config)
 
 # 1. Extract Audio
 extract_audio(config)
