@@ -50,7 +50,10 @@ config = {
         "margin_r": 10,
         "margin_v": 10,
         "encoding": 0
-    }
+    },
+    "background_music": True,  # Option to enable or disable background music
+    "music_volume": 1.0,  # Volume control for background music
+    "music_file": "file_music/one.mp3",  # Background music file
 }
 
 # Create the output folder if it doesn't exist
@@ -233,6 +236,32 @@ def overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitle
     print(f"Final video with emotion PNG overlays saved as: {output_video_path}")
     return output_video_path
 
+# Step 11: Add background music
+def add_background_music(subtitled_video, config):
+    background_music = config["music_file"]
+    video_input = ffmpeg.input(subtitled_video)
+    audio_input = ffmpeg.input(config["audio_file"])
+    music_input = ffmpeg.input(background_music)
+
+    # Get video and background music duration
+    video_duration = float(ffmpeg.probe(subtitled_video)['format']['duration'])
+    music_duration = float(ffmpeg.probe(background_music)['format']['duration'])
+
+    if config["background_music"]:
+        if music_duration < video_duration:
+            # Loop the background music if it's shorter than the video
+            looped_music = ffmpeg.input(background_music, stream_loop=-1, t=video_duration)
+            merged_audio = ffmpeg.filter([audio_input, looped_music], 'amix', duration='longest', dropout_transition=2)
+        else:
+            # Trim the background music if it's longer than the video
+            trimmed_music = ffmpeg.input(background_music, t=video_duration)
+            merged_audio = ffmpeg.filter([audio_input, trimmed_music], 'amix', duration='longest', dropout_transition=2)
+
+        output_final = os.path.join(config["output_folder"], "final_output_with_music.mp4")
+        ffmpeg.output(video_input['v'], merged_audio, output_final).run()
+
+        print(f"Final video with background music saved as: {output_final}")
+        return output_final
 
 # Execution Steps
 
@@ -262,6 +291,9 @@ subtitled_video = burn_subtitles(config)
 
 # 9. Overlay emotion PNGs on top of the subtitled video, if enabled
 final_output = overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitled_video)
+
+# 10. Add background music
+final_output_with_music = add_background_music(final_output, config)
 
 # Optional: Cleanup
 gc.collect()
