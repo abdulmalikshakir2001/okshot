@@ -13,7 +13,7 @@ emotion_model = pipeline("text-classification", model="arpanghoshal/EmoRoBERTa",
 config = {
     "device": "cpu",
     "video_file": "ai_python.mp4",  # Input video file
-    "audio_file": "extracted_audio.mp3",  # Extracted audio file
+    "audio_file": "audio.mp3",  # Extracted audio file
     "output_folder": "files",  # Directory for output files
     "batch_size": 16,
     "compute_type": "int8",  # Set to int8 for lower memory usage
@@ -59,26 +59,38 @@ config = {
 # Create the output folder if it doesn't exist
 if not os.path.exists(config["output_folder"]):
     os.makedirs(config["output_folder"])
-
 # Step 1: Extract audio from video
 def extract_audio(config):
-    ffmpeg.input(config["video_file"]).output(config["audio_file"]).run()
+    # Create the output folder if it doesn't exist
+    if not os.path.exists(config["output_folder"]):
+        os.makedirs(config["output_folder"])
+        print(f"Created directory: {config['output_folder']}")
+    # Ensure the audio file is saved in the correct directory
+    audio_file_path = os.path.join(config["output_folder"], config["audio_file"])
+
+    # Use ffmpeg to extract the audio and save it to the specified path
+    ffmpeg.input(config["video_file"]).output(audio_file_path).run()
+
+    print(f"Audio extracted and saved at: {audio_file_path}")
+    return audio_file_path
 
 # Step 2: Load WhisperX model and transcribe audio
 def transcribe_audio(config):
     model = whisperx.load_model("large-v2", config["device"], compute_type=config["compute_type"])
-    audio = whisperx.load_audio(config["audio_file"])
+    audio = whisperx.load_audio(os.path.join(config["output_folder"], config["audio_file"])
+)
     return model.transcribe(audio, batch_size=config["batch_size"])
 
 # Step 3: Align the transcription
 def align_transcription(result, config):
     model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=config["device"])
-    return whisperx.align(result["segments"], model_a, metadata, config["audio_file"], device=config["device"], return_char_alignments=False)
+    return whisperx.align(result["segments"], model_a, metadata, os.path.join(config["output_folder"], config["audio_file"])
+, device=config["device"], return_char_alignments=False)
 
 # Step 4: Perform speaker diarization
 def diarization(result, config):
     diarize_model = whisperx.DiarizationPipeline(use_auth_token="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", device=config["device"])
-    diarize_segments = diarize_model(config["audio_file"])
+    diarize_segments = diarize_model(os.path.join(config["output_folder"], config["audio_file"]))
     return whisperx.assign_word_speakers(diarize_segments, result)
 
 # Step 5: Detect emotion using EmoRoBERTa model
@@ -188,7 +200,7 @@ def generate_srt_file(grouped_segments, config):
 def burn_subtitles(config):
     video_input_path = config["video_file"]
     ass_file_path = os.path.join(config["output_folder"], config["ass_file"])
-    output_subtitled_video = os.path.join(config["output_folder"], "output_with_subtitles.mp4")
+    output_subtitled_video = os.path.join(config["output_folder"], config["output_video"])
 
     # Use ffmpeg to burn the subtitles into the video
     ffmpeg.input(video_input_path).output(output_subtitled_video, vf=f"subtitles={ass_file_path}").run()
@@ -203,6 +215,7 @@ def overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitle
         return subtitled_video
 
     output_video_path = os.path.join(config["output_folder"], config["output_video"])
+    temp_output_path = os.path.join(config["output_folder"], "temp_output.mp4")  # Temporary output file
 
     # Start building the filter_complex graph for ffmpeg using the subtitled video
     video_stream = ffmpeg.input(subtitled_video)
@@ -229,25 +242,40 @@ def overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitle
             emoji_y = config.get("emoji_position", {}).get("y", "(H-h)/2")
 
             current_stream = ffmpeg.overlay(current_stream, image_stream, x=emoji_x, y=emoji_y, enable=f"between(t,{start_time},{end_time})")
-    
-    # Apply the final overlay to the subtitled video and output the result
-    current_stream.output(output_video_path).run()
 
-    print(f"Final video with emotion PNG overlays saved as: {output_video_path}")
+    # Apply the final overlay to the subtitled video and save to the temporary path
+    current_stream.output(temp_output_path).run()
+
+    print(f"Temporary video with emotion PNG overlays saved as: {temp_output_path}")
+
+    # Check if the final output file already exists, and if so, delete it
+    if os.path.exists(output_video_path):
+        os.remove(output_video_path)
+        print(f"Existing file '{output_video_path}' deleted.")
+
+    # Rename the temporary output to the final output path
+    os.rename(temp_output_path, output_video_path)
+    print(f"Temporary file renamed to final output: {output_video_path}")
+
     return output_video_path
 
-# Step 11: Add background music
+# Step 11: Add background music or retain original audio
 def add_background_music(subtitled_video, config):
-    background_music = config["music_file"]
     video_input = ffmpeg.input(subtitled_video)
-    audio_input = ffmpeg.input(config["audio_file"])
-    music_input = ffmpeg.input(background_music)
+    audio_input = ffmpeg.input(os.path.join(config["output_folder"], config["audio_file"])
+)
 
-    # Get video and background music duration
-    video_duration = float(ffmpeg.probe(subtitled_video)['format']['duration'])
-    music_duration = float(ffmpeg.probe(background_music)['format']['duration'])
+    temp_output_path = os.path.join(config["output_folder"], "temp_output.mp4")  # Temporary output file
+    output_final = os.path.join(config["output_folder"], config["output_video"])  # Final output path
 
+    # Check if background music is enabled
     if config["background_music"]:
+        background_music = config["music_file"]
+
+        # Get video and background music duration
+        video_duration = float(ffmpeg.probe(subtitled_video)['format']['duration'])
+        music_duration = float(ffmpeg.probe(background_music)['format']['duration'])
+
         if music_duration < video_duration:
             # Loop the background music if it's shorter than the video
             looped_music = ffmpeg.input(background_music, stream_loop=-1, t=video_duration)
@@ -257,11 +285,27 @@ def add_background_music(subtitled_video, config):
             trimmed_music = ffmpeg.input(background_music, t=video_duration)
             merged_audio = ffmpeg.filter([audio_input, trimmed_music], 'amix', duration='longest', dropout_transition=2)
 
-        output_final = os.path.join(config["output_folder"], "final_output_with_music.mp4")
-        ffmpeg.output(video_input['v'], merged_audio, output_final).run()
+        # Save to the temporary output file
+        ffmpeg.output(video_input['v'], merged_audio, temp_output_path).run()
 
-        print(f"Final video with background music saved as: {output_final}")
-        return output_final
+        print(f"Temporary video with background music saved as: {temp_output_path}")
+    else:
+        # If background music is disabled, only use the original audio
+        ffmpeg.output(video_input['v'], audio_input['a'], temp_output_path).run()
+
+        print(f"Temporary video with original audio saved as: {temp_output_path}")
+
+    # Check if the final output file already exists, and if so, delete it
+    if os.path.exists(output_final):
+        os.remove(output_final)
+        print(f"Existing file '{output_final}' deleted.")
+
+    # Rename the temporary output to the final output path
+    os.rename(temp_output_path, output_final)
+    print(f"Temporary file renamed to final output: {output_final}")
+
+    return output_final
+
 
 # Execution Steps
 
@@ -292,8 +336,8 @@ subtitled_video = burn_subtitles(config)
 # 9. Overlay emotion PNGs on top of the subtitled video, if enabled
 final_output = overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitled_video)
 
-# 10. Add background music
-final_output_with_music = add_background_music(final_output, config)
+# 10. Add background music or retain original audio
+final_output_with_music_or_audio = add_background_music(final_output, config)
 
 # Optional: Cleanup
 gc.collect()
