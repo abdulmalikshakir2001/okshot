@@ -83,7 +83,6 @@ const { name: fileNameWithoutExt } = path.parse(fileNameWithExtension);
      const audioFilePath = path.join(folderPath, 'audio.mp3');
      const outputFilePath = path.join(folderPath, `${fileNameWithoutExt}_output.mp4`);
      const croppedFilePath = path.join(folderPath, `${fileNameWithoutExt}_cropped.mp4`);
-
 // Output both variables
 console.log('Absolute file path:', absoluteFilePath); // This gives you the full path including the file
 console.log('Folder path:', folderPath); 
@@ -91,7 +90,6 @@ console.log('Folder path:', folderPath);
     const firstVar = pathParts[0];
     const secondVar = pathParts[1];
     const dirPath = path.join(process.cwd(), 'public', 'videos', firstVar, secondVar, 'clips');
-    
     try {
       // Check if the directory exists, if not create it
       if (!fs.existsSync(dirPath)) {
