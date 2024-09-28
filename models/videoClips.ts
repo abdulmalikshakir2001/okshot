@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'; // Import your Prisma instance
 export const createVideoClip = async (data: any) => {
   try {
     
-    const {  clipSrc,srtSrc,assSrc,audioSrc,clipSubtitledSrc,videoId } = data;
+    const {  clipSrc,srtSrc,assSrc,audioSrc,clipSubtitledSrc,videoId ,config} = data;
 
     // Create a new video clip record in the VideoClips table
     const newClip = await prisma.videoClips.create({
@@ -13,6 +13,7 @@ export const createVideoClip = async (data: any) => {
         assSrc:assSrc,
         audioSrc:audioSrc,
         clipSubtitledSrc:clipSubtitledSrc,
+        config:config,
         videoId: +videoId,  // Ensuring videoId is cast to number
       },
     });

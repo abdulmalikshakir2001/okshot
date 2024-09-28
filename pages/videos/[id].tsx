@@ -45,11 +45,9 @@ const FetchingVideo: NextPageWithLayout = ({
   const [language, setLanguage] = useState('en');
   const [aiInstructions, setAiInstructions] = useState('');
   const [toggleStates, setToggleStates] = useState({
-    toggle1: false,
-    toggle2: false,
-    toggle3: false,
-    toggle4: false,
-    toggle5: false,
+    magicFrame: false,
+    magicEmoji: false,
+    magicMusic: false,
   });
 
   const handleSliderChange = (event, newValue) => {
@@ -111,16 +109,7 @@ const FetchingVideo: NextPageWithLayout = ({
       timeFrameRange,
       toggleStates,
     });
-    alert("duration: \t" + duration + 
-      " \nlangauge: \t" + language +
-      " \nai Instructions: \t" + aiInstructions +
-      " \nTime Frame Range: \t" + timeFrameRange +
-      " \nToggle States button1: \t" + toggleStates.toggle1 +
-      " \nToggle States button2: \t" + toggleStates.toggle2 +
-      " \nToggle States button3: \t" + toggleStates.toggle3 +
-      " \nToggle States button4: \t" + toggleStates.toggle4 +
-      " \nToggle States button5: \t" + toggleStates.toggle5
-    )
+    
   };
   
   return (
@@ -321,7 +310,18 @@ const FetchingVideo: NextPageWithLayout = ({
     {Object.keys(toggleStates).map((key, index) => (
       <Box key={key} sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: 1, p: 2 }}>
         <Typography variant="body1">
-          Toggle Option {index + 1}:
+        {(() => {
+          switch (key) {
+            case 'magicFrame':
+              return 'Magic Frame';
+            case 'magicEmoji':
+              return 'Magic Emoji';
+            case 'magicMusic':
+              return 'Magic Music';
+            default:
+              return `Toggle Option ${index + 1}`;
+          }
+        })()}
         </Typography>
         <FormControlLabel
           control={

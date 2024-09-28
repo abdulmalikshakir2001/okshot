@@ -5,6 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
 import { createVideo } from 'models/uploadedVideo';
+import {  getAllVideosForCurrentUser } from 'models/uploadedVideo';
+
 
 interface ExtendedNextApiRequest extends NextApiRequest {
   fileValidationError?: string | null;
@@ -66,6 +68,9 @@ export default async function handler(req: ExtendedNextApiRequest, res: NextApiR
       case 'POST':
         await handlePOST(req, res);
         break;
+        case 'GET':
+          await handleGET(req, res);
+          break;
       
       default:
         res.setHeader('Allow', 'GET, POST');
@@ -150,4 +155,37 @@ const handlePOST = async (req: ExtendedNextApiRequest, res: NextApiResponse) => 
 
     return res.json({ status: 'file uploaded', message: 'File upload successfully' });
   });
+};
+
+
+
+
+
+const handleGET = async (req: ExtendedNextApiRequest, res: NextApiResponse) => {
+  const session = await getSession(req, res);
+
+  try {
+    const videos = await getAllVideosForCurrentUser({ userId: session?.user.id });
+
+    const subscription = await prisma.subscriptions.findFirst({
+      where: {
+        user_id: session?.user.id,
+        status: true,
+      },
+      include: {
+        subscriptionPackage: true,
+      },
+    });
+
+    const maxVideoLengthFromDB = subscription?.subscriptionPackage?.max_length_video;
+
+    res.status(200).json({
+      status: 'true',
+      message: 'get all videos',
+      data: videos,
+      maxVideoLengthFromDB,
+    });
+  } catch (error) {
+    res.json({ status: 'false', message: 'something went wrong' });
+  }
 };

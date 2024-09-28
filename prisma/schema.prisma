@@ -198,6 +198,7 @@ model UploadedVideo {
   conVideoId    String?
   conVideoSrc   String?
   conVideoTitle String?
+  clipsCreated  Boolean       @default(false)
   userId        String // Foreign key field
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt     DateTime     @default(now())
@@ -215,6 +216,7 @@ model VideoClips {
   srtSrc       String?
   clipSubtitledSrc       String?
   audioSrc       String?
+  config        Json
   title         String?
   videoId       Int // Foreign key field
   uploadedVideo UploadedVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)

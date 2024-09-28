@@ -143,6 +143,7 @@ const VideoUpload: React.FC = () => {
     });
   }, []);
 
+
   return (
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -160,7 +161,7 @@ const VideoUpload: React.FC = () => {
             >
               <Link href={`/videos/moments/${clip.id}`} passHref>
                 <ReactPlayer
-                  url={clip.conVideoSrc}
+                  url={clip.originalLink}
                   width="100%"
                   height="100%"
                   className="flex-1"

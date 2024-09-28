@@ -12,7 +12,6 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { method } = req;
-
   try {
     switch (method) {
       case 'POST':
@@ -33,11 +32,7 @@ export default async function handler(
 
 // Handle POST request to create a video
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
-
       const {  originalLink,videoId, timeFrameRange, duration, language, aiInstructions, toggleStates}: any = req.body;
-
-      console.log("the data is coming from frontend : => \n", "video link: ",originalLink, "\nvieo id : ",videoId, "\nTime frame : ",timeFrameRange, "\nDuration is : ",duration, "\nLangauge is : ",language, "\nAI Instruction is : ",aiInstructions, "\ntoggle buttons values : ",toggleStates )
-
       const session = await getSession(req,res)
       //  check usage
 const subscription = await prisma.subscriptions.findFirst({
@@ -95,29 +90,31 @@ console.log('Folder path:', folderPath);
       if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
       }
-      // python code start
-      const config = {
-        input_video: absoluteFilePath,
-        audio_file: audioFilePath,
-        output_video: outputFilePath,
-        cropped_output_video: croppedFilePath,
-        clips_folder_path: dirPath,
-        device: "cpu",
-        batch_size: 16,
-        compute_type: "int8",
-        language: "fr",
-        group_size_min: 2,
-        group_size_max: 4,
-        srt_file: "subtitles.srt",
-        highlight_color: "&H00FFFFFF",
-        highlight_bg_color: "&H00FFC0CB",
-        bg_radius: 3,
+      
+    const config = {
+      device: "cpu",
+      video_file: absoluteFilePath,
+      audio_file: "audio.mp3", // audio file name
+      output_folder: dirPath,
+      batch_size: 16,
+      compute_type: "int8",
+      srt_file: "srt.srt",
+      ass_file: "ass.ass",
+      output_video: "output.mp4",
+      emoji: toggleStates.magicEmoji,
+      emoji_position: { x: "(W-w)/2", y: "(H-h)/2" },
+      min_words: 4,
+      max_words: 8,
+      image_folder:path.join(process.cwd(), 'file_gallary'),
+      image_size: 70,
+      font: {
         fontname: "Arial",
         fontsize: 20,
         primary_color: "&H00FFFFFF",
-        secondary_color: "&H000000FF",
-        outline_color: "&H00FFFFFF",
-        back_color: "&H00FFC0CB",
+        highlight_color: "&H0000FF00",
+        outline_color: "&H00000000",
+        back_color: "&H00000000",
+        highlight_bg_color: "&H00FFC0CB",
         bold: -1,
         italic: 0,
         underline: 0,
@@ -127,14 +124,20 @@ console.log('Folder path:', folderPath);
         spacing: 0,
         angle: 0,
         border_style: 1,
-        outline: 1,
+        outline: 2,
         shadow: 1,
         alignment: 2,
         margin_l: 10,
         margin_r: 10,
         margin_v: 10,
-        encoding: 1,
-        pyannote_auth_token: "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"
+        encoding: 0
+      },
+      background_music: toggleStates.magicMusic,
+      music_volume: 1.0,
+      music_file:path.join(process.cwd(), 'file_music','one.mp3'),
+      cropping: toggleStates.magicFrame,
+      pyannote_auth_token: "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",
+      aspect_ratio: [9, 16]
     };
     const pythonScriptPath = path.join(process.cwd(), 'video_processing.py');
 
@@ -158,16 +161,14 @@ pythonProcess.on('close', async (code) => {
     const startIndex = dirPath.indexOf('/videos');
     const endIndex = dirPath.indexOf('/clips') + '/clips'.length;
     const extractedPath = dirPath.substring(startIndex, endIndex);
-
     // Read all files from the directory
     const files = fs.readdirSync(dirPath);
-
     // Regular expression to match files with numbers before '.mp4'
     const regexMp4 = /_\d+\.mp4$/;
     const regexSrt = /_\d+_srt\.srt$/;
     const regexAss = /_\d+_ass\.ass$/;
-    const regexAudio = /_\d+_audio\.wav$/;
-    const regexSubtitled = /_\d+_subtitled\.mp4$/;
+    const regexAudio = /_\d+_audio\.mp3$/;
+    const regexSubtitled = /_\d+_output\.mp4$/;
 
     // Filter files and map them according to their types
     const clipsArray = files
@@ -198,7 +199,8 @@ pythonProcess.on('close', async (code) => {
         assSrc: clipData.assSrc,
         audioSrc: clipData.audioSrc,
         clipSubtitledSrc: clipData.clipSubtitledSrc,
-        videoId: videoId
+        videoId: videoId,
+        config:config
       });
     }
 
@@ -211,6 +213,16 @@ pythonProcess.on('close', async (code) => {
         upload_count: latestSubscriptionUsage.upload_count + 1,
       },
     });
+
+     await prisma.uploadedVideo.update({
+      where: {
+        id: +videoId, // Replace `id` with the actual id of the video you want to update
+      },
+      data: {
+        clipsCreated: true,
+      },
+    });
+    
 
     console.log('All video clips and associated files have been processed and stored successfully.');
     return res.json({ status:'clips created', message: 'video clips and associated files created' });
