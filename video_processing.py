@@ -19,6 +19,16 @@ emotion_model = pipeline("text-classification", model="arpanghoshal/EmoRoBERTa",
 def videoProcessing(config):
     if not os.path.exists(config["output_folder"]):
         os.makedirs(config["output_folder"])
+    def classify_video_content(text):
+        classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+        candidate_labels = [
+            "Educational", "Entertainment", "Promotional", "News", "Documentary", 
+            "Tutorial", "Vlog", "Review", "Comedy", 
+            "Fitness", "Lifestyle", "Travel", "Motivational"
+        ]
+        result = classifier(text, candidate_labels)
+        best_label = result['labels'][0]
+        return best_label
     saved_clips = [] #clips file name will be stored
     def extract_clips_from_video(config):
         def process_clip(video_path, start_time, end_time, index):
@@ -288,7 +298,7 @@ def videoProcessing(config):
 
         return output_video_path
 
-    def add_background_music(subtitled_video, config,filenameWithOutExt):
+    def add_background_music(subtitled_video, config,filenameWithOutExt,text): #text is transcription of video
         video_input = ffmpeg.input(subtitled_video)
         audio_input = ffmpeg.input(clipAudioFilePath(config,filenameWithOutExt))
 
@@ -297,7 +307,8 @@ def videoProcessing(config):
 
         # Check if background music is enabled
         if config["background_music"]:
-            background_music = config["music_file"]
+            mp3FileName = classify_video_content(text)
+            background_music = f"{config["music_file"]}/{mp3FileName}.mp3"
 
             # Get video and background music duration
             video_duration = float(ffmpeg.probe(subtitled_video)['format']['duration'])
@@ -338,6 +349,9 @@ def videoProcessing(config):
         cropped_video = resize_video_if_needed(config,filenameWithOutExt)
         extract_audio(config,filenameWithOutExt)
         result = transcribe_audio(config,filenameWithOutExt)
+        text = " ".join([segment['text'] for segment in result['segments']])
+        formatted_text = f'"""{text}"""'
+
         aligned_result = align_transcription(result, config,filenameWithOutExt)
         diarized_result = diarization(aligned_result, config,filenameWithOutExt)
         grouped_segments = generate_subtitles_with_emotions(diarized_result["segments"], config,filenameWithOutExt)
@@ -345,7 +359,7 @@ def videoProcessing(config):
         generate_srt_file(grouped_segments, config,filenameWithOutExt)
         subtitled_video = burn_subtitles(config,filenameWithOutExt)
         final_output = overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitled_video,filenameWithOutExt)
-        final_output_with_music_or_audio = add_background_music(final_output, config,filenameWithOutExt)
+        final_output_with_music_or_audio = add_background_music(final_output, config,filenameWithOutExt,formatted_text)
         gc.collect()
         
 

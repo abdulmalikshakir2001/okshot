@@ -134,7 +134,7 @@ console.log('Folder path:', folderPath);
       },
       background_music: toggleStates.magicMusic,
       music_volume: 1.0,
-      music_file:path.join(process.cwd(), 'file_music','one.mp3'),
+      music_file:path.join(process.cwd(), 'file_music'),
       cropping: toggleStates.magicFrame,
       pyannote_auth_token: "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",
       aspect_ratio: [9, 16]
