@@ -6,6 +6,8 @@ RUN apt-get update
 RUN apt-get install -y python3 python3-venv python3-pip
 RUN apt-get install -y ffmpeg
 RUN apt-get install -y git
+RUN apt-get install -y imagemagick
+RUN apt-get install -y libhdf5-dev
 
 # Set the working directory inside the container
 WORKDIR /app
