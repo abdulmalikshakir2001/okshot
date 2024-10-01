@@ -136,7 +136,7 @@ console.log('Folder path:', folderPath);
       music_volume: 1.0,
       music_file:path.join(process.cwd(), 'file_music'),
       cropping: toggleStates.magicFrame,
-      pyannote_auth_token: "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",
+      pyannote_auth_token: process.env.PYANNOTE_AUTH_TOKEN,
       aspect_ratio: [9, 16]
     };
     const pythonScriptPath = path.join(process.cwd(), 'video_processing.py');
