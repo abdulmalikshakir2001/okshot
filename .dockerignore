@@ -6,3 +6,5 @@ docker-compose.yml
 .env
 myenv
 public/videos
+video_processing.log
+*.log
