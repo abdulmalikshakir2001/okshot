@@ -62,3 +62,5 @@ yarn-error.log*
 .sentryclirc
 Dockerfile
 docker-compose.yml
+video_processing.log
+*.log
