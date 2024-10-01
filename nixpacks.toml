@@ -1,0 +1,61 @@
+[phases.setup]
+# Install dependencies for Python, Node.js, and Rust
+apt_pkgs = [
+  "git",
+  "ffmpeg",
+  "imagemagick",
+  "libmagic1",
+  "python3-venv",
+  "python3-pip"
+]
+
+[phases.python-env]
+# Set up and activate the Python virtual environment
+cmds = [
+  "python3 -m venv /myenv",
+  ". /myenv/bin/activate",
+  "pip install -r requirements.txt",
+  "pip install torch==2.0.0 torchvision==0.15.0 torchaudio==2.0.0 --index-url https://download.pytorch.org/whl/cpu"
+]
+
+[phases.npm-install]
+# Install Node.js dependencies with retries
+cmds = [
+  "npm config set fetch-retries 5",
+  "npm config set fetch-retry-mintimeout 20000",
+  "npm config set fetch-retry-maxtimeout 120000",
+  "npm install"
+]
+
+[phases.build]
+# Ensure the app is ready for deployment
+cmds = ["npm run build"]
+
+[phases.start]
+# Run the app in development mode
+cmds = ["npm run start"]
+
+[env]
+# Environment variables pulled from Railway's secret manager
+NEXTAUTH_URL = "${NEXTAUTH_URL}"
+NEXTAUTH_SECRET = "${NEXTAUTH_SECRET}"
+SMTP_HOST = "${SMTP_HOST}"
+SMTP_PORT = "${SMTP_PORT}"
+SMTP_USER = "${SMTP_USER}"
+SMTP_PASSWORD = "${SMTP_PASSWORD}"
+SMTP_FROM = "${SMTP_FROM}"
+DATABASE_URL = "${DATABASE_URL}"
+APP_URL = "${APP_URL}"
+SVIX_URL = "${SVIX_URL}"
+SVIX_API_KEY = "${SVIX_API_KEY}"
+GITHUB_CLIENT_ID = "${GITHUB_CLIENT_ID}"
+GITHUB_CLIENT_SECRET = "${GITHUB_CLIENT_SECRET}"
+GOOGLE_CLIENT_ID = "${GOOGLE_CLIENT_ID}"
+GOOGLE_CLIENT_SECRET = "${GOOGLE_CLIENT_SECRET}"
+NEXTAUTH_SESSION_STRATEGY = "jwt"
+NEXT_PUBLIC_SUPPORT_URL = "${NEXT_PUBLIC_SUPPORT_URL}"
+STRIPE_SECRET_KEY = "${STRIPE_SECRET_KEY}"
+STRIPE_WEBHOOK_SECRET = "${STRIPE_WEBHOOK_SECRET}"
+
+# Expose the port for the application
+PORT = "4002"
