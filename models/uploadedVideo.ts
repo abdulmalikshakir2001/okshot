@@ -111,3 +111,21 @@ export const getAllVideos = async (data: any) => {
     await prisma.$disconnect();
   }
 };
+
+
+export const getAllVideosForCurrentUser = async (data: any) => {
+  try {
+    const videos = await prisma.uploadedVideo.findMany({
+      where: {
+        userId: data.userId,
+        clipsCreated: true,
+      },
+    });
+    return videos;
+  } catch (error) {
+    console.error('Error fetching videos:', error);
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+};

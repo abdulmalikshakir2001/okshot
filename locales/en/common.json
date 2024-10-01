@@ -405,6 +405,11 @@
   },
   "no-subscription": "You have no current Subscription!",
   "subscription-cancelled": "Subscription Cancelled",
-  "your-subscription-will-end-on": "You can use the existing subscription till"
+  "your-subscription-will-end-on": "You can use the existing subscription till",
+  "upload": "Upload",
+  "uploading-video": "Uploading Video",
+  "drag-drop-video-upload": "Drag and drop a video or click to upload"
+
+
 
 }

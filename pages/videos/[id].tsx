@@ -10,6 +10,26 @@ import ReactPlayer from 'react-player';
 import axios from 'axios';
 import {  Loading } from '@/components/shared';
 
+import { Container, Grid, Typography, Box, Button, MenuItem, Select, InputLabel, FormControl, TextField, Slider, Switch, FormControlLabel } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add'; 
+import LanguageIcon from '@mui/icons-material/Language';
+import TimerIcon from '@mui/icons-material/Timer';
+
+
+const durationOptions = [
+  { value: '1min', label: '1 min' },
+  { value: '2min', label: '2 min' },
+  { value: '3min', label: '3 min' },
+  { value: '5min', label: '5 min' },
+];
+
+const languageOptions = [
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'de', label: 'German' },
+];
+
 
 const FetchingVideo: NextPageWithLayout = ({
   originalLink,
@@ -18,299 +38,86 @@ const FetchingVideo: NextPageWithLayout = ({
   const { t } = useTranslation('common');
   const router = useRouter();
   const { id } = router.query;
-  const [videoData, setVideoData] = useState<any>(null);
-  const [dbVideoObj, setDbVideoObj] = useState<any>(null);
-  const [clips, setClips] = useState<any[]>([]);
-  const [exportClips, setExportClips] = useState<any[]>([]);
-  const [allProcessed, setAllProcessed] = useState(false);
-  const [storedData, setStoredData] = useState<any[]>([]); 
-  const [isAllDataStored, setIsAllDataStored] = useState(false);
-  const [readyClips, setReadyClips] = useState<any[]>([]);
-  const [readClipsRef,setReadyClipsRef] = useState(false);
   const [loading,setLoading] = useState(false);
-  console.log('video data',videoData)
-  
-  
 
-  const apiKey = 'kak_784ec1c162bc-4366-b7d9-b37d266e6559';
-  const baseURL = 'https://v1.api.klap.app/v1';
-  
+  const [timeFrameRange, setTimeFrameRange] = useState([1, 5]);
+  const [duration, setDuration] = useState('1min');
+  const [language, setLanguage] = useState('en');
+  const [aiInstructions, setAiInstructions] = useState('');
+  const [toggleStates, setToggleStates] = useState({
+    magicFrame: false,
+    magicEmoji: false,
+    magicMusic: false,
+  });
+
+  const handleSliderChange = (event, newValue) => {
+    setTimeFrameRange(newValue);
+  };
+
+  const handleDurationChange = (event) => {
+    setDuration(event.target.value);
+  };
+
+  const handleLanguageChange = (event) => {
+    setLanguage(event.target.value);
+  };
+
+  const handleAiInstructionsChange = (event) => {
+    setAiInstructions(event.target.value);
+  };
+
+  const handleToggleChange = (event) => {
+    setToggleStates(prevState => ({
+      ...prevState,
+      [event.target.name]: event.target.checked
+    }));
+  };
+
 
   const handleCreateClips = async () => {
     setLoading(true)
-
-    
-
-    try {
-      const videoResponse = await axios.post(
-        `${baseURL}/videos`,
-        {
-          source_video_url: originalLink,
-          language: 'en',
-          min_duration: 10,
-          max_duration: 60,
-          target_duration: 30,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-        }
-      );
-
-      const videoData = videoResponse.data;
-
-      // Update conVideoId field
-      const conVideoUpatedResponse = await axios.put('/api/video/UploadVideo', {
-        conVideoId: videoData.id,
-        videoId: id,
-      });
-      setDbVideoObj(conVideoUpatedResponse.data.data);
-      axios
-        .post('/api/video/UploadVideo', {
-          fetchVideoById: id,
-        })
-        .then((res) => {
-          setDbVideoObj(res.data.data);
-        });
-      
-      
-
-      setVideoData(videoData);
-
-    } catch (error) {
-      console.error('Error creating video or fetching clips:', error);
+    axios.post('/api/videoClips/clips', {
+      originalLink: originalLink,
+      videoId: id,
+      timeFrameRange: timeFrameRange,
+      duration: duration,
+      language: language,
+      aiInstructions: aiInstructions,
+      toggleStates: toggleStates
+  })
+  .then(response => {
+    if(response.data.status === 'clips created'){
+      router.push(`/videos/moments/${id}`)
     }
+      console.log('Response:', response.data.status);
+  })
+  .catch(error => {
+      console.error('Error:', error);
+  });
+ 
   };
-
-  
-
-  useEffect(() => {
-    if (!dbVideoObj) {
-
-      axios
-        .post('/api/video/UploadVideo', {
-          fetchVideoById: id,
-        })
-        .then((res) => {
-          setDbVideoObj(res.data.data);
-        });
-    }
-  }, [dbVideoObj, id]);
-
-  useEffect(() => {
-    if (dbVideoObj && dbVideoObj.conVideoId) {
-      const interval = setInterval(() => {
-        axios
-          .get(`${baseURL}/videos/${dbVideoObj.conVideoId}`, {
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-            },
-          })
-          .then((res) => {
-            console.log(res.data);
-            if (res.data.status === 'ready') {
-              const { src_url, title } = res.data;
-              if (!dbVideoObj.conVideoSrc) {
-                axios
-                  .post('/api/video/UploadVideo', {
-                    updateConVidSrcById: id,
-                    src_url,
-                    title,
-                  })
-                  .then((res) => {
-                    console.log(res.data);
-                    if (res.data.status === 'true') {
-                      
-                      setDbVideoObj(res.data.data);
-                    }
-                  });
-              }
-
-              clearInterval(interval);
-            }
-          });
-      }, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [conVideoId, dbVideoObj, id]);
-
-  useEffect(() => {
-    if (dbVideoObj && dbVideoObj.conVideoId && dbVideoObj.conVideoSrc) {
-      axios
-        .get(`${baseURL}/videos/${dbVideoObj.conVideoId}/clips`, {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-        })
-        .then((res) => {
-          const clipsData = res.data;
-          setClips(clipsData);
-
-          clipsData.forEach((clip: any) => {
-            axios
-              .post(
-                `${baseURL}/videos/${clip.video_id}/clips/${clip.id}/exports`,
-                {
-                  preset_id: clip.preset_id,
-                  crop:false
-                },
-                {
-                  headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                  },
-                }
-              )
-              .then((res) => {
-                setExportClips((prevExportClips) => [
-                  ...prevExportClips,
-                  res.data,
-                ]);
-              });
-          });
-        });
-    }
-  }, [dbVideoObj]);
-  useEffect(() => {
-    if (exportClips.length === clips.length && clips.length > 0 && !allProcessed) {
-
-      const promises = exportClips.map((clip) => {
-        return axios
-          .get(
-            `${baseURL}/videos/${clip.video_id}/clips/${clip.clip_id}/exports/${clip.id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${apiKey}`,
-              },
-            }
-          )
-          .then(() => {
-            return axios
-              .post('/api/videoClips/clips', {
-                conVideoId: clip.video_id,
-                clip_id: clip.clip_id,
-                exportId: clip.id,
-                videoId: id,
-              })
-              .then((res) => {
-                if(res.data.data === "payment"){
-                  router.push('/pricing')
-                  return false;
-
-                }
-                const newData = res.data.data;
-                setStoredData((prevStoredData) => [...prevStoredData, newData]);
-              });
-          });
-      });
-        Promise.all(promises).then(() => {
-          setIsAllDataStored(true); // Update state to indicate all data is stored
-        });
-  
-
-
-      setAllProcessed(true);
-
-
-    }
-  }, [exportClips, clips, allProcessed, id, router]);
-
-  useEffect(() => {
-    if (isAllDataStored) {
-      const interval = setInterval(() => {
-        // Your code to execute every 10 seconds
-        const readyPromises = storedData.map((clip) => {
-          return axios
-            .get(
-              `${baseURL}/videos/${clip.conVideoId}/clips/${clip.clip_id}/exports/${clip.exportId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${apiKey}`,
-                },
-              }
-            )
-            .then((res) => {
-              if (res.data.status === 'ready') {
-
-                if (readyClips.length !== storedData.length) {
-                  if (!readyClips.some((readyClip) => readyClip.id === res.data.id)) {
-                    setReadyClips((prevReadyClips) => [...prevReadyClips, res.data]);
-                  }
-              }
-
-              }
-            });
-        });
-
-        Promise.all(readyPromises).then(() => {
-
-          if (readyClips.length === storedData.length) {
-            setReadyClipsRef(true)
-            clearInterval(interval);
-          }
-          
-        });
-          
-
-      }, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [isAllDataStored, storedData,readyClips]);
-
-  useEffect(() => {
-    if (readyClips.length > 0) {
-      if(readClipsRef){
-      axios
-        .put('/api/videoClips/clips', {
-     
-          exportArray: JSON.stringify(readyClips) 
-     
-     
-        })
-        .then(() => {
-          router.push(`/videos/moments/${id}`)
-          
-        });
-
-
-
-      // const promises = readyClips.map((clip) => {
-      //   return axios
-      //   .put('/api/videoClips/clips', {
-     
-      //     clip_id: clip.id,
-      //     title:clip.name,
-      //     src_url:clip.src_url,
-     
-     
-      //   })
-      //   .then((res) => {
-          
-      //   });
-      // });
-      //   Promise.all(promises).then(() => {
-
-          // router.push(`/videos/moments/${id}`)
-          
-      //   });
-    }
-    }
-    
-  }, [id, readClipsRef, readyClips, router]);
-  
-
 
   if(loading){
     return <Loading />
   }
-  
 
+  const handleCreateShort = () => {
+    console.log({
+      duration,
+      language,
+      aiInstructions,
+      timeFrameRange,
+      toggleStates,
+    });
+    
+  };
+  
   return (
     <>
       <Head>
         <title>{`${t('create-clips')}`}</title>
       </Head>
-      <div className="flex justify-center">
+      {/* <div className="flex justify-center">
         <div className="create_clips_section flex gap-4 w-full md:w-3/4">
           <div className="flex-1">
             <ReactPlayer url={originalLink} width="100%" controls={true} />
@@ -328,17 +135,214 @@ const FetchingVideo: NextPageWithLayout = ({
 
           </div>
         </div>
-      </div>
-      {clips.length > 0 && (
-        <div className="mt-4">
-          <h2>{t('clips')}</h2>
-          <ul>
-            {clips.map((clip) => (
-              <li key={clip.id}>{clip.title}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      </div> */}
+
+
+      <Container maxWidth="md" sx={{ mt: 4, backgroundColor: 'white', display: 'flex', flexDirection: 'column' }}>
+      <Typography variant="h4" gutterBottom>
+        Create Short
+      </Typography>
+      
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              p: 2,
+              borderRadius: 1,
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="h6">Video Preview</Typography>
+            <Box sx={{ mt: 2 }}>
+            <ReactPlayer url={originalLink} width="400px" height="250px" controls={true} />
+            </Box>
+          </Box>
+        </Grid>
+        
+        <Grid item xs={12} md={6}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              p: 2,
+              borderRadius: 1,
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="h6">Moment Duration</Typography>
+            <FormControl fullWidth sx={{ mt: 2 }}>
+              <InputLabel >Duration</InputLabel>
+              <Select
+                value={duration}
+                onChange={handleDurationChange}
+                // sx={{ color: 'white' }}
+                label="Duration"
+              >
+                {durationOptions.map(option => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Typography variant="subtitle1" sx={{ mt: 2 }}>
+              AI Instructions (Optional)
+            </Typography>
+            <TextField
+              multiline
+              rows={4}
+              placeholder="Enter AI instructions here..."
+              value={aiInstructions}
+              onChange={handleAiInstructionsChange}
+              sx={{ mt: 2, backgroundColor: 'white',  }}
+              fullWidth
+            />
+          </Box>
+        </Grid>
+      </Grid>
+
+      {/* New Grid Section */}
+      <Grid container spacing={2} sx={{ mt: 4 }}>
+        <Grid item xs={12} md={6}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              p: 2,
+              borderRadius: 1,
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="h6">
+              <TimerIcon sx={{ mr: 1 }} /> Process Time Frame
+            </Typography>
+            <Box sx={{ width: '100%', mt: 2 }}>
+              <Slider
+                value={timeFrameRange}
+                onChange={handleSliderChange}
+                aria-labelledby="time-frame-slider"
+                step={1}
+                marks
+                min={1}
+                max={10}
+                valueLabelDisplay="auto"
+                valueLabelFormat={(value) => `${value} min`}
+                sx={{ mb: 2 }}
+                getAriaValueText={(value) => `${value} min`}
+              />
+              <Typography
+                variant="body1"
+                sx={{
+                  textShadow: '1px 1px 2px gray, 0 0 25px gray, 0 0 5px gray',
+                }}
+              >
+                Duration: {timeFrameRange[0]} min - {timeFrameRange[1]} min
+              </Typography>
+            </Box>
+          </Box>
+        </Grid>
+        
+        <Grid item xs={12} md={6}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              p: 2,
+              borderRadius: 1,
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="h6">
+              <LanguageIcon sx={{ mr: 1 }} /> Select Language
+            </Typography>
+            <FormControl fullWidth sx={{ mt: 2 }}>
+              <InputLabel sx={{}}>Language</InputLabel>
+              <Select
+                value={language}
+                onChange={handleLanguageChange}
+                // sx={{ color: 'white' }}
+                label="Language"
+              >
+                {languageOptions.map(option => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Grid>
+      </Grid>
+
+      <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ width: '200px', fontSize: '16px', padding: '10px 20px' }} 
+          startIcon={<AddIcon />}
+          onClick={handleCreateClips}
+        >
+          Create Short
+        </Button>
+      </Box>
+
+      <Box sx={{ mt: 4, textAlign: 'center', position: 'relative', mb: 4 }}>
+  <Typography variant="h6" sx={{
+    position: 'absolute',
+    backgroundColor: 'white',
+    padding: '0 10px',
+    display: 'inline-block',
+    top: '-0.0rem',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    zIndex: 1, 
+  }}>
+    Advanced
+  </Typography>
+  <Box sx={{ mt: 2, p: 2, border: '1px solid gray', borderRadius: 1, backgroundColor: 'white' }}>
+    {Object.keys(toggleStates).map((key, index) => (
+      <Box key={key} sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: 1, p: 2 }}>
+        <Typography variant="body1">
+        {(() => {
+          switch (key) {
+            case 'magicFrame':
+              return 'Magic Frame';
+            case 'magicEmoji':
+              return 'Magic Emoji';
+            case 'magicMusic':
+              return 'Magic Music';
+            default:
+              return `Toggle Option ${index + 1}`;
+          }
+        })()}
+        </Typography>
+        <FormControlLabel
+          control={
+            <Switch
+              name={key}
+              checked={toggleStates[key]}
+              onChange={handleToggleChange}
+              color="primary"
+            />
+          }
+          label={toggleStates[key] ? 'On' : 'Off'}
+          labelPlacement="end"
+          sx={{ ml: 2 }}
+        />
+      </Box>
+    ))}
+  </Box>
+</Box>
+
+    </Container>
+      
     </>
   );
 };

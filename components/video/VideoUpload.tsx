@@ -11,9 +11,7 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 import ReactPlayer from 'react-player';
 import Link from 'next/link';
-// import { Loading } from '@/components/shared';
 import toast from 'react-hot-toast';
-
 
 const VideoUpload: React.FC = () => {
   const router = useRouter();
@@ -21,7 +19,9 @@ const VideoUpload: React.FC = () => {
   const { t } = useTranslation('common');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [video, setVideo] = useState<any[]>([]);
-  const [maxVideoLengthFromDB, setMaxVideoLengthFromDB] = useState<string | null>(null); // Add state to hold max video length
+  const [maxVideoLengthFromDB, setMaxVideoLengthFromDB] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -33,6 +33,51 @@ const VideoUpload: React.FC = () => {
 
   const handleConfirm = () => {
     setIsModalOpen(false);
+  };
+
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    setIsModalOpen(false);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post('/api/video/UploadVideo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+          }
+        },
+      });
+
+      setIsUploading(false);
+
+      if (response.data.status === 'file uploaded') {
+        toast.success('File uploaded successfully');
+      } else if(response.data.status === 'file exist') {
+        toast.error('File already exist');
+      } else if (response.data.status === 'url inserted') {
+        const { id } = response.data.data;
+        router.push(`/videos/${id}`);
+        toast.success('File uploaded successfully');
+      }
+      else if (response.data.status === 'subscription limit end') {
+        router.push(`/dashboard/manageSubscription`);
+        toast.error('Please upgrade subscription plan');
+      }
+       else {
+        toast.error('Error uploading video');
+      }
+    } catch (error) {
+      setIsUploading(false);
+      console.error('Error uploading video:', error);
+      toast.error('Something went wrong');
+    }
   };
 
   const youtubeRegex = /^(https?:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$/;
@@ -59,26 +104,32 @@ const VideoUpload: React.FC = () => {
       setLoading(true);
 
       try {
-        const response = await axios.post('/api/video/UploadVideo', {
+        const response = await axios.post('/api/video/UploadLink', {
           origionalVideoLink: link,
         });
 
         setLoading(false);
 
-        if (response.data.data === 'payment') {
-          toast.error('You need to buy a subscription to upload videos.')
+        if (response.data.status === 'false' && response.data.data === 'payment') {
+          toast.error('You need to buy a subscription to upload videos.');
           router.push(`/pricing`);
           return;
         }
 
-        const { id, maxVideoLengthFromDB } = response.data.data;
-        setMaxVideoLengthFromDB(maxVideoLengthFromDB); // Set the max video length from response
-        router.push(`/videos/${id}`);
+        if (response.data.status === 'true') {
+          const { id, maxVideoLengthFromDB } = response.data.data;
+          setMaxVideoLengthFromDB(maxVideoLengthFromDB);
+          router.push(`/videos/${id}`);
+          toast.success('Upload complete');
+        } else {
+          formik.setFieldError('link', `You cannot upload video greater than ${formatMaxVideoLength(maxVideoLengthFromDB || '00:00:00')}`);
+          toast.error('Error uploading video');
+        }
       } catch (error) {
         setLoading(false);
         console.error('Error uploading video:', error);
-        setMaxVideoLengthFromDB(null); // Clear max video length on error
-        formik.setFieldError('link', `You cannot upload video greater than ${formatMaxVideoLength(maxVideoLengthFromDB || '00:00:00')}`);
+        setMaxVideoLengthFromDB(null);
+        toast.error('Error uploading video');
       }
     },
   });
@@ -86,11 +137,12 @@ const VideoUpload: React.FC = () => {
   useEffect(() => {
     axios.get('/api/video/UploadVideo').then((res) => {
       setVideo(res.data.data);
-      setMaxVideoLengthFromDB(res.data.maxVideoLengthFromDB); // Set the max video length from response
+      setMaxVideoLengthFromDB(res.data.maxVideoLengthFromDB);
     }).catch(error => {
       console.error('Error fetching video data:', error);
     });
   }, []);
+
 
   return (
     <div>
@@ -102,14 +154,14 @@ const VideoUpload: React.FC = () => {
           <FaPlus className="text-purple-500 text-xl md:text-2xl lg:text-3xl" />
         </div>
         {video.map((clip, index) =>
-          clip.conVideoSrc ? (
+          clip.originalLink  ? (
             <div
               key={index}
               className="video_par flex flex-col w-full rounded-lg overflow-hidden aspect-w-1 aspect-h-1"
             >
               <Link href={`/videos/moments/${clip.id}`} passHref>
                 <ReactPlayer
-                  url={clip.conVideoSrc}
+                  url={clip.originalLink}
                   width="100%"
                   height="100%"
                   className="flex-1"
@@ -122,12 +174,12 @@ const VideoUpload: React.FC = () => {
           ) : null
         )}
       </div>
-
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         title={t('add-video')}
         onConfirm={handleConfirm}
+        onFileUpload={handleFileUpload}
       >
         <form onSubmit={formik.handleSubmit}>
           <div className="flex items-center gap-x-3 flex-wrap">
@@ -141,14 +193,10 @@ const VideoUpload: React.FC = () => {
                 error={formik.touched.link ? formik.errors.link : undefined}
                 onChange={formik.handleChange}
               />
-              {/* Display validation error message */}
-              {/* {formik.touched.link && formik.errors.link && (
-                <div className="text-red-500 text-xs mt-1">{formik.errors.link}</div>
-              )} */}
             </div>
             <div className="mt-9 space-y-3">
               <Button
-                type="submit" 
+                type="submit"
                 color="primary"
                 loading={loading}
                 active={!loading}
@@ -162,6 +210,20 @@ const VideoUpload: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {isUploading && (
+        <div className="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 w-64">
+          <div className="text-center text-gray-700 font-semibold mb-2">
+            {t('uploading-video')}: {uploadProgress}%
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div
+              className="bg-green-500 h-2.5 rounded-full"
+              style={{ width: `${uploadProgress}%` }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
