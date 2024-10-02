@@ -2,7 +2,7 @@ providers = ['...', 'python']
 [phases.setup]
 providers = ['...', 'python']
 # Install dependencies for Python, Node.js, and Rust
-nixPkgs = ['...', 'python3', 'nodejs', 'git', 'ffmpeg', 'imagemagick', 'file', 'python3-venv', 'python3-pip']
+aptPkgs = ['...', 'python3', 'nodejs', 'git', 'ffmpeg', 'imagemagick', 'file', 'python3-venv', 'python3-pip']
 
 
 [phases.python-env]
