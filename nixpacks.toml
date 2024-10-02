@@ -1,6 +1,7 @@
 [phases.setup]
 # Install dependencies for Python, Node.js, and Rust
-nixPkgs = ['...', 'python3', 'nodejs', 'git', 'ffmpeg', 'imagemagick', 'libmagic', 'python3-venv', 'python3-pip']
+nixPkgs = ['...', 'python3', 'nodejs', 'git', 'ffmpeg', 'imagemagick', 'file', 'python3-venv', 'python3-pip']
+
 
 [phases.python-env]
 # Set up and activate the Python virtual environment
