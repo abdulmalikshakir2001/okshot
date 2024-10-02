@@ -1,3 +1,4 @@
+providers = ['...', 'python']
 [phases.setup]
 providers = ['...', 'python']
 # Install dependencies for Python, Node.js, and Rust
