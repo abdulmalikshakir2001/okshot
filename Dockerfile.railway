@@ -114,6 +114,6 @@ EXPOSE 4002
 
 # Add logging to check the db:setup command
 RUN echo "Running db:setup..."
-
+RUN npm run build
 # Start the Next.js app in development mode
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]
