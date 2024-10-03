@@ -24,12 +24,11 @@ cmds = [
 ]
 
 [phases.build]
-# Ensure the app is ready for deployment
 cmds = ["npm run build"]
 
 [phases.start]
-# Run the app in development mode
 cmds = ["npm run start"]
+dependsOn = ["build"]
 
 [env]
 # Environment variables pulled from Railway's secret manager
