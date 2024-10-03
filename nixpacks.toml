@@ -22,6 +22,8 @@ cmds = [
   "npm config set fetch-retry-maxtimeout 120000",
   "npm install"
 ]
+[phase.name]
+  paths = ['/usr/local/bin']
 
 [phases.build]
 cmds = ["npm run build"]
