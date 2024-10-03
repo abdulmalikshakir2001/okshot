@@ -1,19 +1,23 @@
 providers = ['...', 'python']
 [phases.setup]
-providers = ['...', 'python']
-# Install dependencies for Python, Node.js, and Rust
-aptPkgs = ['...', 'python3', 'nodejs', 'git', 'ffmpeg', 'imagemagick', 'file', 'python3-venv', 'python3-pip']
-
+aptPkgs = ['...','git', 'ffmpeg', 'imagemagick', 'libmagic1', 'python3-venv', 'python3-pip']
 
 [phases.python-env]
 # Set up and activate the Python virtual environment
 cmds = [
   "python3 -m venv /myenv",
   ". /myenv/bin/activate",
+  
+]
+[phase.copy-req-txt]
+  onlyIncludeFiles = ['requirements.txt']
+[phases.install-pkgs]
+cmds = [
   "pip install -r requirements.txt",
   "pip install torch==2.0.0 torchvision==0.15.0 torchaudio==2.0.0 --index-url https://download.pytorch.org/whl/cpu"
 ]
-
+[phase.copy-pkg-json]
+  onlyIncludeFiles = ['package.json']
 [phases.npm-install]
 # Install Node.js dependencies with retries
 cmds = [
@@ -22,8 +26,8 @@ cmds = [
   "npm config set fetch-retry-maxtimeout 120000",
   "npm install"
 ]
-[phase.name]
-  paths = ['/usr/local/bin']
+[phase.copy-all-files]
+  onlyIncludeFiles = []
 
 [phases.build]
 cmds = ["npm run build"]
