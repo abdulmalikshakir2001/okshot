@@ -2,6 +2,12 @@ providers = ['...', 'python']
 [phases.setup]
 aptPkgs = ['...','git', 'ffmpeg', 'imagemagick', 'libmagic1', 'python3-venv', 'python3-pip']
 
+[phases.bin-path]
+cmds = [
+  'export PATH="/usr/local/bin:$PATH"',  # Add this line
+  'echo $PATH'  # Optional: To check the updated PATH,
+  'source ~/.bash_profile',
+]
 [phases.python-env]
 # Set up and activate the Python virtual environment
 cmds = [
