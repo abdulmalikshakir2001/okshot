@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-
+import React from 'react';
+import { useTranslation } from 'next-i18next';
 interface Position {
   xPosition: string;
   setXPosition: React.Dispatch<React.SetStateAction<string>>;
@@ -17,19 +17,19 @@ const PositionSettings: React.FC<Position> = ({
   rotation, setRotation,
   scale, setScale,
 }) => {
-  
+  const { t } = useTranslation('common');
   return (
     <div className="h-full overflow-y-auto px-4 pt-2 pb-12">
       <div className="flex flex-col gap-4 pb-8">
         <div className="flex w-full flex-col gap-4 pb-4">
           <div className="border-b border-b-neutral-800 py-2 flex items-center justify-between sticky -top-2 ">
             <div className="flex items-center">
-              <p className="text-lg font-semibold">Position</p>
+              <p className="text-lg font-semibold">{t("Position")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div>
-              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">X Position</h2>
+              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">{t("x-position")}</h2>
               <div className="flex items-center justify-between gap-4 w-full">
                 <div className="flex h-fit w-fit items-center gap-1 rounded-md border border-neutral-300 shadow-lg text-xs">
                   <div className="inline-block">
@@ -43,12 +43,12 @@ const PositionSettings: React.FC<Position> = ({
                       />
                     </div>
                   </div>
-                  <p className="px-1 dark:text-neutral-500">px</p>
+                  <p className="px-1 dark:text-neutral-500">{t("px")}</p>
                 </div>
               </div>
             </div>
             <div>
-              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">Y Position</h2>
+              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">{t("y-position")}</h2>
               <div className="flex items-center justify-between gap-4 w-full">
                 <div className="flex h-fit w-fit items-center gap-1 rounded-md border border-neutral-300 shadow-lg text-xs">
                   <div className="inline-block">
@@ -62,14 +62,14 @@ const PositionSettings: React.FC<Position> = ({
                       />
                     </div>
                   </div>
-                  <p className="px-1 dark:text-neutral-500">px</p>
+                  <p className="px-1 dark:text-neutral-500">{t("px")}</p>
                 </div>
               </div>
             </div>
           </div>
           <div className='flex items-center gap-2'>
           <div>
-              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">Rotation</h2>
+              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">{t("Rotation")}</h2>
               <div className="flex items-center justify-between gap-4 w-full">
                 <div className="flex h-fit w-fit items-center gap-1 rounded-md border border-neutral-300 shadow-lg text-xs">
                   <div className="inline-block">
@@ -88,7 +88,7 @@ const PositionSettings: React.FC<Position> = ({
               </div>
             </div>
             <div>
-              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">Scale</h2>
+              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">{t("Scale")}</h2>
               <div className="flex items-center justify-between gap-4 w-full">
                 <div className="flex h-fit w-fit items-center gap-1 rounded-md border border-neutral-300 shadow-lg text-xs">
                   <div className="inline-block">
@@ -111,5 +111,7 @@ const PositionSettings: React.FC<Position> = ({
     </div>
   );
 };
+
+
 
 export default PositionSettings;

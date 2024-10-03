@@ -1,8 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
 import {    getAllClips } from 'models/videoClips';
-import { getSession } from '@/lib/session';
-import { prisma } from '@/lib/prisma';
 
 
 

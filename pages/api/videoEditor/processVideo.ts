@@ -218,7 +218,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       fs.writeFileSync(tempAssSubtitlesPath, assContent);
       console.log('ASS subtitles file saved successfully:', tempAssSubtitlesPath);
 
-      exec(`ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 ${inputVideoPath}`, (error, stdout, stderr) => {
+      exec(`ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 ${inputVideoPath}`, (error, stdout) => {
         if (error) {
           console.error('FFprobe error:', error);
           return res.status(500).json({ error: 'Failed to get video resolution' });

@@ -1,3 +1,4 @@
+
 import Head from 'next/head';
 import { NextPageWithLayout } from 'types';
 import { useTranslation } from 'next-i18next';
@@ -5,7 +6,7 @@ import { GetServerSidePropsContext } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
 import { getVideoById } from 'models/uploadedVideo';
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import ReactPlayer from 'react-player';
 import axios from 'axios';
 import {  Loading } from '@/components/shared';
@@ -33,7 +34,7 @@ const languageOptions = [
 
 const FetchingVideo: NextPageWithLayout = ({
   originalLink,
-  conVideoId,
+  
 }: any) => {
   const { t } = useTranslation('common');
   const router = useRouter();
@@ -101,46 +102,19 @@ const FetchingVideo: NextPageWithLayout = ({
     return <Loading />
   }
 
-  const handleCreateShort = () => {
-    console.log({
-      duration,
-      language,
-      aiInstructions,
-      timeFrameRange,
-      toggleStates,
-    });
-    
-  };
+  
   
   return (
     <>
       <Head>
         <title>{`${t('create-clips')}`}</title>
       </Head>
-      {/* <div className="flex justify-center">
-        <div className="create_clips_section flex gap-4 w-full md:w-3/4">
-          <div className="flex-1">
-            <ReactPlayer url={originalLink} width="100%" controls={true} />
-          </div>
-          <div className="flex-1 flex items-end">
-            <button
-              onClick={handleCreateClips}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              {t('create-clips')}
-            </button>
-
-
-
-
-          </div>
-        </div>
-      </div> */}
+     
 
 
       <Container maxWidth="md" sx={{ mt: 4, backgroundColor: 'white', display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4" gutterBottom>
-        Create Short
+        {t("create-short")}
       </Typography>
       
       <Grid container spacing={2}>
@@ -155,7 +129,7 @@ const FetchingVideo: NextPageWithLayout = ({
               textAlign: 'center',
             }}
           >
-            <Typography variant="h6">Video Preview</Typography>
+            <Typography variant="h6">{t("video-preview")}</Typography>
             <Box sx={{ mt: 2 }}>
             <ReactPlayer url={originalLink} width="400px" height="250px" controls={true} />
             </Box>
@@ -173,9 +147,9 @@ const FetchingVideo: NextPageWithLayout = ({
               textAlign: 'center',
             }}
           >
-            <Typography variant="h6">Moment Duration</Typography>
+            <Typography variant="h6">{t("moment-duration")}</Typography>
             <FormControl fullWidth sx={{ mt: 2 }}>
-              <InputLabel >Duration</InputLabel>
+              <InputLabel >{t("duration")}</InputLabel>
               <Select
                 value={duration}
                 onChange={handleDurationChange}
@@ -191,7 +165,7 @@ const FetchingVideo: NextPageWithLayout = ({
             </FormControl>
 
             <Typography variant="subtitle1" sx={{ mt: 2 }}>
-              AI Instructions (Optional)
+              {t("ai-instructions")} ({t("Optional")})
             </Typography>
             <TextField
               multiline
@@ -220,7 +194,7 @@ const FetchingVideo: NextPageWithLayout = ({
             }}
           >
             <Typography variant="h6">
-              <TimerIcon sx={{ mr: 1 }} /> Process Time Frame
+              <TimerIcon sx={{ mr: 1 }} /> {t("process-time-frame")}
             </Typography>
             <Box sx={{ width: '100%', mt: 2 }}>
               <Slider
@@ -242,7 +216,7 @@ const FetchingVideo: NextPageWithLayout = ({
                   textShadow: '1px 1px 2px gray, 0 0 25px gray, 0 0 5px gray',
                 }}
               >
-                Duration: {timeFrameRange[0]} min - {timeFrameRange[1]} min
+                {t("duration")}: {timeFrameRange[0]} {t("min")} - {timeFrameRange[1]} {t("min")}
               </Typography>
             </Box>
           </Box>
@@ -260,10 +234,10 @@ const FetchingVideo: NextPageWithLayout = ({
             }}
           >
             <Typography variant="h6">
-              <LanguageIcon sx={{ mr: 1 }} /> Select Language
+              <LanguageIcon sx={{ mr: 1 }} /> {t("select-language")}
             </Typography>
             <FormControl fullWidth sx={{ mt: 2 }}>
-              <InputLabel sx={{}}>Language</InputLabel>
+              <InputLabel sx={{}}>{t("Language")}</InputLabel>
               <Select
                 value={language}
                 onChange={handleLanguageChange}
@@ -289,7 +263,7 @@ const FetchingVideo: NextPageWithLayout = ({
           startIcon={<AddIcon />}
           onClick={handleCreateClips}
         >
-          Create Short
+          {t("create-short")}
         </Button>
       </Box>
 
@@ -304,7 +278,7 @@ const FetchingVideo: NextPageWithLayout = ({
     transform: 'translateX(-50%)',
     zIndex: 1, 
   }}>
-    Advanced
+    {t("advanced")}
   </Typography>
   <Box sx={{ mt: 2, p: 2, border: '1px solid gray', borderRadius: 1, backgroundColor: 'white' }}>
     {Object.keys(toggleStates).map((key, index) => (

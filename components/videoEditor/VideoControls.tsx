@@ -125,7 +125,7 @@ const VideoControls: React.FC<VideoControlsProps> = ({ videoRef }) => {
           {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
         </button>
         <button onClick={handleSpeedChange} aria-label={`Playback Speed ${playbackRate}x`} className='flex items-center'>
-          {playbackRate}x
+          {playbackRate}{"x"}
         </button>
       </div>
       <span>{new Date(duration * 1000).toISOString().substr(14, 5)}</span>

@@ -55,14 +55,14 @@ const FontColor: React.FC<FontColorProps> = ({
       <div className="flex w-full flex-col gap-4">
         <div className="border-b border-b-neutral-800 flex items-center justify-between sticky">
           <div className="flex items-center">
-            <p className="text-lg  font-semibold">Text</p>
+            <p className="text-lg  font-semibold">{"Text"}</p>
           </div>
         </div>
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
             {/* Text Color */}
             <div>
-              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">Text Color</h2>
+              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">{"Text Color"}</h2>
               <div className="space-y-2">
                 <div
                   ref={textPickerRef}
@@ -84,7 +84,7 @@ const FontColor: React.FC<FontColorProps> = ({
                         onClick={() => clearColor(setTextColor, '#ffffff')}
                       >
                         <span className="flex items-center justify-center">
-                          <span className="mr-2">✖</span> Clear Color
+                          <span className="mr-2">{"✖"}</span> {"Clear Color"}
                         </span>
                       </button>
                     </div>
@@ -104,7 +104,7 @@ const FontColor: React.FC<FontColorProps> = ({
             </div>
             {/* Stroke Color */}
             <div>
-              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">Stroke Color</h2>
+              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">{"Stroke Color"}</h2>
               <div className="space-y-2">
                 <div
                   ref={strokePickerRef}
@@ -126,7 +126,7 @@ const FontColor: React.FC<FontColorProps> = ({
                         onClick={() => clearColor(setStrokeColor, "#1CFFDD")}
                       >
                         <span className="flex items-center justify-center">
-                          <span className="mr-2">✖</span> Clear Color
+                          <span className="mr-2">{"✖"}</span> {"Clear Color"}
                         </span>
                       </button>
                     </div>
@@ -152,13 +152,13 @@ const FontColor: React.FC<FontColorProps> = ({
       <div className="flex w-full flex-col gap-4 pb-4">
         <div className="border-b border-b-neutral-800 py-1 pt-3 flex items-center justify-between sticky -top-2 ">
           <div className="flex items-center gap-2">
-            <p className="text-lg  font-semibold">Animation Colors</p>
+            <p className="text-lg  font-semibold">{"Animation Colors"}</p>
           </div>
         </div>
         <div className="flex gap-4">
           <div className="flex items-center gap-4">
             <div>
-              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">Active Word Color</h2>
+              <h2 className="mb-2 text-xs tracking-wide text-neutral-400">{"Active Word Color"}</h2>
               <div className="space-y-2">
                 <div
                   ref={emphasizePickerRef}
@@ -180,7 +180,7 @@ const FontColor: React.FC<FontColorProps> = ({
                         onClick={() => clearColor(setEmphasizeColor, '#0094ff')}
                       >
                         <span className="flex items-center justify-center">
-                          <span className="mr-2">✖</span> Clear Color
+                          <span className="mr-2">{"✖"}</span> {"Clear Color"}
                         </span>
                       </button>
                     </div>

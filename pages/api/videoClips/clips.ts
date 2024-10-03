@@ -32,7 +32,7 @@ export default async function handler(
 
 // Handle POST request to create a video
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
-      const {  originalLink,videoId, timeFrameRange, duration, language, aiInstructions, toggleStates}: any = req.body;
+      const {  originalLink,videoId, toggleStates}: any = req.body;
       const session = await getSession(req,res)
       //  check usage
 const subscription = await prisma.subscriptions.findFirst({
@@ -67,17 +67,13 @@ if (
 
 //  check usage
       
-      const fileNameWithExtension = path.basename(originalLink);
 
 // Extract the file name without the extension
-const { name: fileNameWithoutExt } = path.parse(fileNameWithExtension);
 // Output the result
       const cleanedOriginalLink = originalLink.startsWith('/') ? originalLink.substring(1) : originalLink;
      const absoluteFilePath = path.join(process.cwd(), 'public', cleanedOriginalLink); // path for config options
      const folderPath = path.dirname(absoluteFilePath);
-     const audioFilePath = path.join(folderPath, 'audio.mp3');
-     const outputFilePath = path.join(folderPath, `${fileNameWithoutExt}_output.mp4`);
-     const croppedFilePath = path.join(folderPath, `${fileNameWithoutExt}_cropped.mp4`);
+    
 // Output both variables
 console.log('Absolute file path:', absoluteFilePath); // This gives you the full path including the file
 console.log('Folder path:', folderPath); 
@@ -156,7 +152,7 @@ pythonProcess.stderr.on('data', (data) => {
 });
 
 // Handle the close event
-pythonProcess.on('close', async (code) => {
+pythonProcess.on('close', async () => {
   try {
     const startIndex = dirPath.indexOf('/videos');
     const endIndex = dirPath.indexOf('/clips') + '/clips'.length;
@@ -191,7 +187,7 @@ pythonProcess.on('close', async (code) => {
       });
 
     // Loop through the array and store each clip and its associated paths in the database
-    for (let clipData of clipsArray) {
+    for (const clipData of clipsArray) {
       // Insert each clip's details into the database
       await createVideoClip({
         clipSrc: clipData.clipSrc,
@@ -204,7 +200,7 @@ pythonProcess.on('close', async (code) => {
       });
     }
 
-    const updatedSubscriptionUsage = await prisma.subscriptionUsage.update({
+     await prisma.subscriptionUsage.update({
       where: {
         id: latestSubscriptionUsage.id,
       },

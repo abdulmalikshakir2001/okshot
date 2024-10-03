@@ -3,6 +3,14 @@ import { Container, Grid, Typography, Box, Button, MenuItem, Select, InputLabel,
 import AddIcon from '@mui/icons-material/Add'; 
 import LanguageIcon from '@mui/icons-material/Language';
 import TimerIcon from '@mui/icons-material/Timer';
+import { useTranslation } from 'next-i18next';
+import { type ReactElement } from 'react';
+import { GetServerSidePropsContext } from 'next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+
+
+
+
 
 const durationOptions = [
   { value: '1min', label: '1 min' },
@@ -19,6 +27,8 @@ const languageOptions = [
 ];
 
 const CreateShortPage = () => {
+  const { t } = useTranslation('common');
+
   const [timeFrameRange, setTimeFrameRange] = useState([1, 5]);
   const [duration, setDuration] = useState('1min');
   const [language, setLanguage] = useState('en');
@@ -77,7 +87,7 @@ const CreateShortPage = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 4, backgroundColor: 'white', display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4" gutterBottom>
-        Create Short
+        {t('create-short')}
       </Typography>
       
       <Grid container spacing={2}>
@@ -92,7 +102,7 @@ const CreateShortPage = () => {
               textAlign: 'center',
             }}
           >
-            <Typography variant="h6">Video Preview</Typography>
+            <Typography variant="h6">{t("video-preview")}</Typography>
             <Box sx={{ mt: 2 }}>
               <video
                 width="100%"
@@ -100,7 +110,7 @@ const CreateShortPage = () => {
                 src="video.mp4"
                 style={{ borderRadius: '8px' }}
               >
-                Your browser does not support the video tag.
+                {t("browser-not-support")}
               </video>
             </Box>
           </Box>
@@ -117,9 +127,9 @@ const CreateShortPage = () => {
               textAlign: 'center',
             }}
           >
-            <Typography variant="h6">Moment Duration</Typography>
+            <Typography variant="h6">{t("moment-duration")}</Typography>
             <FormControl fullWidth sx={{ mt: 2 }}>
-              <InputLabel >Duration</InputLabel>
+              <InputLabel >{t("duration")}</InputLabel>
               <Select
                 value={duration}
                 onChange={handleDurationChange}
@@ -135,7 +145,7 @@ const CreateShortPage = () => {
             </FormControl>
 
             <Typography variant="subtitle1" sx={{ mt: 2 }}>
-              AI Instructions (Optional)
+              {t("ai-instructions")} ({t("Optional")})
             </Typography>
             <TextField
               multiline
@@ -164,7 +174,7 @@ const CreateShortPage = () => {
             }}
           >
             <Typography variant="h6">
-              <TimerIcon sx={{ mr: 1 }} /> Process Time Frame
+              <TimerIcon sx={{ mr: 1 }} /> {t("process-time-frame")}
             </Typography>
             <Box sx={{ width: '100%', mt: 2 }}>
               <Slider
@@ -186,7 +196,7 @@ const CreateShortPage = () => {
                   textShadow: '1px 1px 2px gray, 0 0 25px gray, 0 0 5px gray',
                 }}
               >
-                Duration: {timeFrameRange[0]} min - {timeFrameRange[1]} min
+                {t("duration")}: {timeFrameRange[0]} {t("min")} - {timeFrameRange[1]} {t("min")}
               </Typography>
             </Box>
           </Box>
@@ -204,10 +214,11 @@ const CreateShortPage = () => {
             }}
           >
             <Typography variant="h6">
-              <LanguageIcon sx={{ mr: 1 }} /> Select Language
+              <LanguageIcon sx={{ mr: 1 }} /> {t("select-language")}
             </Typography>
             <FormControl fullWidth sx={{ mt: 2 }}>
-              <InputLabel sx={{}}>Language</InputLabel>
+
+              <InputLabel sx={{}}>{t("Language")}</InputLabel>
               <Select
                 value={language}
                 onChange={handleLanguageChange}
@@ -233,7 +244,7 @@ const CreateShortPage = () => {
           startIcon={<AddIcon />}
           onClick={handleCreateShort} 
         >
-          Create Short
+          {t("create-short")}
         </Button>
       </Box>
 
@@ -248,13 +259,13 @@ const CreateShortPage = () => {
     transform: 'translateX(-50%)',
     zIndex: 1, 
   }}>
-    Advanced
+    {t("advanced")}
   </Typography>
   <Box sx={{ mt: 2, p: 2, border: '1px solid gray', borderRadius: 1, backgroundColor: 'white' }}>
     {Object.keys(toggleStates).map((key, index) => (
       <Box key={key} sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: 1, p: 2 }}>
         <Typography variant="body1">
-          Toggle Option {index + 1}:
+          {t("toggle-option")} {index + 1}:
         </Typography>
         <FormControlLabel
           control={
@@ -276,6 +287,24 @@ const CreateShortPage = () => {
 
     </Container>
   );
+};
+
+
+
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  // Redirect to login page if landing page is disabled
+
+  const { locale } = context;
+
+  return {
+    props: {
+      ...(locale ? await serverSideTranslations(locale, ['common']) : {}),
+    },
+  };
+};
+
+CreateShortPage.getLayout = function getLayout(page: ReactElement) {
+  return <>{page}</>;
 };
 
 export default CreateShortPage;

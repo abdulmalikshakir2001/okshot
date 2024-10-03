@@ -40,7 +40,6 @@ const TimeLine: React.FC<VideoEditorProps> = ({ videoUrl, subtitles, onCutVideo,
           const frameList = await generateFrames(videoUrl, duration);
           setFrames(frameList);
 
-          const lastFrameTime = frameList[frameList.length - 1]?.time || 0;
           setEndTime(duration);
         } catch (error) {
           console.error('Error generating frames:', error);

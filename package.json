@@ -27,7 +27,6 @@
     "check-locale": "node check-locale.js",
     "delete-team": "node --env-file .env delete-team.js",
     "seed": "ts-node ./prisma/seed.ts"
-    
   },
   "dependencies": {
     "@boxyhq/metrics": "0.2.7",

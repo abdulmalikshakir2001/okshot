@@ -78,7 +78,7 @@ const FetchingVideo: NextPageWithLayout = () => {
                     </h3>
                     <div className='flex gap-3 mt-3'>
 
-                        <button onClick={() => handleEditClick(clip.id)}  className='bg-blue-500 flex justify-center items-center gap-2 text-white px-4 py-2 rounded'> <IoFilmOutline />  Edit</button>
+                        <button onClick={() => handleEditClick(clip.id)}  className='bg-blue-500 flex justify-center items-center gap-2 text-white px-4 py-2 rounded'> <IoFilmOutline /> {t("Edit")}</button>
 
                         <a
                           href={clip.clipSrc}

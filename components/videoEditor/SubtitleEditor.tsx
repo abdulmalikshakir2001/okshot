@@ -385,7 +385,7 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
                             : "border-none text-gray-700"
                             } `}
                     >
-                        <SlEnergy /> Presets
+                        <SlEnergy /> {"Presets"}
                     </button>
                     <button
                         onClick={() => handleTabClick('text')}
@@ -393,7 +393,7 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
                             : "border-none text-gray-700"
                             } `}
                     >
-                        <PiTextTBold /> Text
+                        <PiTextTBold /> {"Text"}
                     </button>
                     <button
                         onClick={() => handleTabClick('color')}
@@ -401,7 +401,7 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
                             : "border-none text-gray-700"
                             } `}
                     >
-                        <FaPaintBrush /> color
+                        <FaPaintBrush /> {"color"}
                     </button>
                     <button
                         onClick={() => handleTabClick('dots')}
@@ -434,7 +434,7 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
                                             padding: `${fontStyles.font1.padding}`
                                            }}
                                     >
-                                        Your <span style={{textShadow: `${fontStyles.font1.textShadow}`, color: `${fontStyle.highlightColor}` }}>Brand</span>
+                                        {"Your"} <span style={{textShadow: `${fontStyles.font1.textShadow}`, color: `${fontStyle.highlightColor}` }}>{"Brand"}</span>
                                     </p>
                                 </div>
                             </div>
@@ -456,8 +456,8 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
                                             padding: `${fontStyles.font1.padding}`
                                            }}
                                     >
-                                        Sample{" "}
-                                        <span style={{textShadow: `${fontStyles.font2.textShadow}`, color: `${fontStyle.highlightColor}` }}>Title</span>
+                                        {"Sample"}{" "}
+                                        <span style={{textShadow: `${fontStyles.font2.textShadow}`, color: `${fontStyle.highlightColor}` }}>{"Title"}</span>
                                     </p>
                                 </div>
                             </div>
@@ -470,8 +470,8 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
                                         className="rounded-md px-4 py-2 w-fit font-extrabold select-none"
                                         style={fontStyles.font3}
                                     >
-                                        Sample{" "}
-                                        <span style={{ color: "rgb(0, 148, 255)" }}>Title</span>
+                                        {"Sample"}{" "}
+                                        <span style={{ color: "rgb(0, 148, 255)" }}>{"Title"}</span>
                                     </p>
                                 </div>
                             </div>
@@ -484,8 +484,8 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
                                         className="rounded-md px-4 py-2 font-bold w-fit select-none"
                                         style={fontStyles.font4}
                                     >
-                                        Sample{" "}
-                                        <span style={{ color: "rgb(0, 148, 255)" }}>Title</span>
+                                        {"Sample"}{" "}
+                                        <span style={{ color: "rgb(0, 148, 255)" }}>{"Title"}</span>
                                     </p>
                                 </div>
                             </div>
@@ -498,8 +498,8 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
                                         className="rounded-md px-4 py-2 w-fit select-none"
                                         style={fontStyles.font5}
                                     >
-                                        Sample{" "}
-                                        <span style={{ color: `${fontStyle.highlightColor}` }}>Title</span>
+                                        {"Sample"}{" "}
+                                        <span style={{ color: `${fontStyle.highlightColor}` }}>{"Title"}</span>
                                     </p>
                                 </div>
                             </div>
@@ -512,8 +512,8 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
                                         className="rounded-md px-4 py-2 w-fit select-none"
                                         style={fontStyles.font6}
                                     >
-                                        Sample{" "}
-                                        <span style={{ color: `${fontStyle.highlightColor}` }}>Title</span>
+                                        {"Sample"}{" "}
+                                        <span style={{ color: `${fontStyle.highlightColor}` }}>{"Title"}</span>
                                     </p>
                                 </div>
                             </div>
@@ -526,7 +526,7 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
                                 <div className="flex items-center gap-4">
                                     {/* Font Selection */}
                                     <div>
-                                        <h2 className="mb-2 text-xs tracking-wide text-neutral-400">Font</h2>
+                                        <h2 className="mb-2 text-xs tracking-wide text-neutral-400">{"Font"}</h2>
                                         <div className="inline-block text-left space-y-2">
                                             <select
                                                 value={selectedFont}
@@ -544,7 +544,7 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
 
                                     {/* Align Options */}
                                     <div>
-                                        <h2 className="mb-2 text-xs tracking-wide text-neutral-400">Align</h2>
+                                        <h2 className="mb-2 text-xs tracking-wide text-neutral-400">{"Align"}</h2>
                                         <div className="flex w-min grow-0 h-min rounded-md border border-neutral-300">
                                             <div className="rounded-l-md px-2 py-3 hover:cursor-pointer flex items-center justify-center hover:bg-gray-100 dark:hover:bg-neutral-700 "
                                                 onClick={() => handleTextAlignChange('left')}>
@@ -566,11 +566,11 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
 
                                     {/* Case Options */}
                                     <div>
-                                        <h2 className="mb-2 text-xs tracking-wide text-neutral-400">Case</h2>
+                                        <h2 className="mb-2 text-xs tracking-wide text-neutral-400">{"Case"}</h2>
                                         <div className="flex w-min border border-neutral-300 rounded-md">
                                             <div className="group relative inline-flex items-center justify-center">
                                                 <div className="absolute z-50 m-2 hidden h-min w-max max-w-[11rem] rounded-md bg-black py-2 px-2 group-hover:block border border-neutral-700 bottom-full">
-                                                    <p className="m-0 text-center text-xs text-white">Normal</p>
+                                                    <p className="m-0 text-center text-xs text-white">{"Normal"}</p>
                                                     <div className="absolute top-full left-[45%] h-0 w-0 [border:_6px_solid_transparent] [border-top:_6px_solid_black]" />
                                                 </div>
                                                 <div className="p-2 hover:cursor-pointer hover:bg-gray-100"
@@ -580,32 +580,32 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
                                             </div>
                                             <div className="group relative inline-flex items-center justify-center">
                                                 <div className="absolute z-50 m-2 hidden h-min w-max max-w-[11rem] rounded-md bg-black py-2 px-2 group-hover:block border border-neutral-700 bottom-full">
-                                                    <p className="m-0 text-center text-xs text-white">Uppercase</p>
+                                                    <p className="m-0 text-center text-xs text-white">{"Uppercase"}</p>
                                                     <div className="absolute top-full left-[45%] h-0 w-0 [border:_6px_solid_transparent] [border-top:_6px_solid_black]" />
                                                 </div>
                                                 <div className="p-2 hover:cursor-pointer hover:bg-gray-100"
                                                     onClick={() => handleTextTransformChange('uppercase')}>
-                                                    <p className="select-none uppercase">Aa</p>
+                                                    <p className="select-none uppercase">{"Aa"}</p>
                                                 </div>
                                             </div>
                                             <div className="group relative inline-flex items-center justify-center">
                                                 <div className="absolute z-50 m-2 hidden h-min w-max max-w-[11rem] rounded-md bg-black py-2 px-2 group-hover:block border border-neutral-700 bottom-full">
-                                                    <p className="m-0 text-center text-xs text-white">Lowercase</p>
+                                                    <p className="m-0 text-center text-xs text-white">{"Lowercase"}</p>
                                                     <div className="absolute top-full left-[45%] h-0 w-0 [border:_6px_solid_transparent] [border-top:_6px_solid_black]" />
                                                 </div>
                                                 <div className="p-2 hover:cursor-pointer hover:bg-gray-100"
                                                     onClick={() => handleTextTransformChange('lowercase')}>
-                                                    <p className="select-none dark:text-white lowercase">Aa</p>
+                                                    <p className="select-none dark:text-white lowercase">{"Aa"}</p>
                                                 </div>
                                             </div>
                                             <div className="group relative inline-flex items-center justify-center">
                                                 <div className="absolute z-50 m-2 hidden h-min w-max max-w-[11rem] rounded-md bg-black py-2 px-2 group-hover:block border border-neutral-700 bottom-full">
-                                                    <p className="m-0 text-center text-xs text-white">Title Case</p>
+                                                    <p className="m-0 text-center text-xs text-white">{"Title Case"}</p>
                                                     <div className="absolute top-full left-[45%] h-0 w-0 [border:_6px_solid_transparent] [border-top:_6px_solid_black]" />
                                                 </div>
                                                 <div className="p-2 hover:cursor-pointer hover:bg-gray-100"
                                                     onClick={() => handleTextTransformChange('capitalize')}>
-                                                    <p className="select-none capitalize">Aa</p>
+                                                    <p className="select-none capitalize">{"Aa"}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -614,7 +614,7 @@ const SubtitleEditor: React.FC<SubtitleEditorProps> = ({ fontStyle, onFontStyleC
 
                                     {/* letter spacing */}
                                     <div>
-                                        <h2 className="mb-2 text-xs tracking-wide text-neutral-400">Letter Space</h2>
+                                        <h2 className="mb-2 text-xs tracking-wide text-neutral-400">{"Letter Space"}</h2>
                                         <div className="flex items-center justify-between gap-4 w-full">
                                             <div className="flex h-fit w-fit items-center gap-1 rounded-md border border-neutral-300  text-xs">
                                                 <div className="inline-block">
