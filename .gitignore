@@ -60,7 +60,5 @@ yarn-error.log*
 .vscode
 # Sentry Config File
 .sentryclirc
-Dockerfile
-docker-compose.yml
 video_processing.log
 *.log
