@@ -6,8 +6,7 @@ aptPkgs = ['...','git', 'ffmpeg', 'imagemagick', 'libmagic1', 'python3-venv', 'p
 # Set up and activate the Python virtual environment
 cmds = [
   "python3 -m venv /myenv",
-  ". /myenv/bin/activate",
-  
+  "source /myenv/bin/activate",
 ]
 [phase.copy-req-txt]
   onlyIncludeFiles = ['requirements.txt']
