@@ -32,7 +32,11 @@ export default async function handler(
 
 // Handle POST request to create a video
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
-      const {  originalLink,videoId, toggleStates}: any = req.body;
+      const {  videoId, toggleStates}: any = req.body;
+      let {  originalLink}: any = req.body;
+      originalLink = `/${originalLink}`
+     
+
       const session = await getSession(req,res)
       //  check usage
 const subscription = await prisma.subscriptions.findFirst({
@@ -71,7 +75,7 @@ if (
 // Extract the file name without the extension
 // Output the result
       const cleanedOriginalLink = originalLink.startsWith('/') ? originalLink.substring(1) : originalLink;
-     const absoluteFilePath = path.join(process.cwd(), 'public', cleanedOriginalLink); // path for config options
+     const absoluteFilePath = path.join(process.cwd(), 'uploads', cleanedOriginalLink); // path for config options
      const folderPath = path.dirname(absoluteFilePath);
     
 // Output both variables
@@ -80,7 +84,7 @@ console.log('Folder path:', folderPath);
       const pathParts = originalLink.split('/videos/')[1].split('/');
     const firstVar = pathParts[0];
     const secondVar = pathParts[1];
-    const dirPath = path.join(process.cwd(), 'public', 'videos', firstVar, secondVar, 'clips');
+    const dirPath = path.join(process.cwd(), 'uploads', 'videos', firstVar, secondVar, 'clips');
     try {
       // Check if the directory exists, if not create it
       if (!fs.existsSync(dirPath)) {
@@ -156,7 +160,10 @@ pythonProcess.on('close', async () => {
   try {
     const startIndex = dirPath.indexOf('/videos');
     const endIndex = dirPath.indexOf('/clips') + '/clips'.length;
-    const extractedPath = dirPath.substring(startIndex, endIndex);
+    let extractedPath = dirPath.substring(startIndex, endIndex);
+    if (extractedPath.startsWith('/')) {
+      extractedPath = extractedPath.substring(1);
+    }
     // Read all files from the directory
     const files = fs.readdirSync(dirPath);
     // Regular expression to match files with numbers before '.mp4'

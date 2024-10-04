@@ -206,9 +206,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log("subtitles style: > ", fontStyle)
 
-    const inputVideoPath = path.posix.join('public', videoUrl).replace(/\\/g, '/');
-    const outputVideoPath = path.posix.join('public', 'videos', 'output.mp4').replace(/\\/g, '/');
-    const tempAssSubtitlesPath = path.posix.join('public', 'subtitles', 'temp.ass').replace(/\\/g, '/');
+    const inputVideoPath = path.posix.join('uploads', videoUrl).replace(/\\/g, '/');
+    const outputVideoPath = path.posix.join('uploads', 'videos', 'output.mp4').replace(/\\/g, '/');
+    const tempAssSubtitlesPath = path.posix.join('uploads', 'subtitles', 'temp.ass').replace(/\\/g, '/');
 
     try {
       // Generate ASS subtitle content with styles

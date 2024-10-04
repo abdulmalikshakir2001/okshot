@@ -45,7 +45,7 @@ interface FontStyle {
 
   const [momentData, setMomentData] = useState<any>(null);
   const [subtitlesUrl, setSubtitlesUrl] = useState<string>(
-    momentData && momentData.srtSrc
+    momentData && `/api/loadVideo/${momentData.srtSrc}`
   );
   
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -130,7 +130,7 @@ interface FontStyle {
     }
   }, [router.query.moment]);
   useEffect(()=>{
-    setSubtitlesUrl(momentData &&  momentData.srtSrc)
+    setSubtitlesUrl(momentData && `/api/loadVideo/${momentData.srtSrc}`)
 
   },[momentData,subtitlesUrl])
  
@@ -251,8 +251,8 @@ interface FontStyle {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-           videoUrl :momentData.clipSrc,
-          subtitlesUrl,
+           videoUrl :`${momentData.clipSrc}`,
+          subtitlesUrl:`${momentData.srtSrc}`,
           subtitlesContent,
           selectedRatio,
           fontStyle,
@@ -494,7 +494,7 @@ interface FontStyle {
         <div className="w-[400px] h-[400px] flex items-center justify-center mb-5 mt-5 relative">
           <div className={`${getAspectRatioStyle()} relative overflow-hidden`}>
             <video
-              src={momentData &&  momentData.clipSrc}
+              src={momentData &&  `/api/loadVideo/${momentData.clipSrc}`}
               ref={videoRef}
               className={`${getAspectRatioStyle()}`}
             />
@@ -526,7 +526,7 @@ interface FontStyle {
       </div>
       <div className="w-full">
         <Timeline 
-        videoUrl={momentData && momentData.clipSrc} 
+        videoUrl={momentData && `/api/loadVideo/${momentData.clipSrc}`} 
         videoRef={videoRef} 
         onCutVideo={handleCutVideo} 
         subtitles={subtitles}
