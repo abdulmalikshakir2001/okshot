@@ -67,7 +67,7 @@ def videoProcessing(config):
     def clipMp4FilePath(config,filenameWithOutExt):
         return os.path.join(config["output_folder"], f"{filenameWithOutExt}.mp4")
     def clipAudioFilePath(config,filenameWithOutExt):
-        return os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config["audio_file"]}")
+        return os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config['audio_file']}")
     def resize_video_if_needed(config,filenameWithOutExt):
         if config.get("cropping"):
             
@@ -168,7 +168,7 @@ def videoProcessing(config):
         return grouped_segments
 
     def generate_ass_highlighted(grouped_segments, config,filenameWithOutExt):
-        ass_file_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config["ass_file"]}")
+        ass_file_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config['ass_file']}")
         with open(ass_file_path, 'w', encoding='utf-8') as ass_file:
             # Basic header for ASS file
             ass_file.write("[Script Info]\n")
@@ -213,7 +213,7 @@ def videoProcessing(config):
             
             print(f"ASS file generated with background highlight: {ass_file_path}")
     def generate_srt_file(grouped_segments, config,filenameWithOutExt):
-        srt_file_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config["srt_file"]}")
+        srt_file_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config['srt_file']}")
         with open(srt_file_path, 'w', encoding='utf-8') as srt_file:
             for index, segment in enumerate(grouped_segments, start=1):
                 start_time = segment['start']
@@ -236,8 +236,8 @@ def videoProcessing(config):
                 print(f"Using cropped video for burning subtitles: {video_input_path}")
             else:
                 print(f"Cropped video not found. Using original video.")
-        ass_file_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config["ass_file"]}")
-        output_subtitled_video = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config["output_video"]}")
+        ass_file_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config['ass_file']}")
+        output_subtitled_video = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config['output_video']}")
 
         # Use ffmpeg to burn the subtitles into the video
         ffmpeg.input(video_input_path).output(output_subtitled_video, vf=f"subtitles={ass_file_path}").run()
@@ -253,7 +253,7 @@ def videoProcessing(config):
             print("Emoji overlay is disabled. Skipping emoji overlay.")
             return subtitled_video
 
-        output_video_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config["output_video"]}")
+        output_video_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config['output_video']}")
         temp_output_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_temp_output.mp4")  # Temporary output file
 
         # Start building the filter_complex graph for ffmpeg using the subtitled video
@@ -303,12 +303,12 @@ def videoProcessing(config):
         audio_input = ffmpeg.input(clipAudioFilePath(config,filenameWithOutExt))
 
         temp_output_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_temp_output.mp4")  # Temporary output file
-        output_final = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config["output_video"]}")  # Final output path
+        output_final = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config['output_video']}")  # Final output path
 
         # Check if background music is enabled
         if config["background_music"]:
             mp3FileName = classify_video_content(text)
-            background_music = f"{config["music_file"]}/{mp3FileName}.mp3"
+            background_music = f"{config['music_file']}/{mp3FileName}.mp3"
 
             # Get video and background music duration
             video_duration = float(ffmpeg.probe(subtitled_video)['format']['duration'])
