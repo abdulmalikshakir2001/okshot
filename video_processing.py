@@ -10,15 +10,16 @@ from clipsai import ClipFinder, Transcriber
 from moviepy.video.io.VideoFileClip import VideoFileClip
 import json
 import sys
+from huggingface_hub import login
+# Log in using the token
 
-# Load EmoRoBERTa pipeline for emotion detection
-emotion_model = pipeline("text-classification", model="arpanghoshal/EmoRoBERTa", return_all_scores=True)
 # Configuration object for paths and subtitle styles
 
 
 def videoProcessing(config):
     if not os.path.exists(config["output_folder"]):
         os.makedirs(config["output_folder"])
+    login(token=config['pyannote_auth_token'])
     def classify_video_content(text):
         classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
         candidate_labels = [
@@ -131,6 +132,8 @@ def videoProcessing(config):
         return whisperx.assign_word_speakers(diarize_segments, result)
 
     def detect_emotion(text):
+        
+        emotion_model = pipeline("text-classification", model="arpanghoshal/EmoRoBERTa", return_all_scores=True)
         result = emotion_model(text)
         emotion = max(result[0], key=lambda x: x['score'])['label'].lower()
         return emotion
