@@ -5,7 +5,7 @@ import { ComputerDesktopIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 import fetcher from '@/lib/fetcher';
-import type { Session } from '@prisma/client';
+import { Session } from '@prisma/client';
 // import {Session} from "@/components/account/index"
 import { WithLoadingAndError } from '@/components/shared';
 import ConfirmationDialog from '@/components/shared/ConfirmationDialog';
