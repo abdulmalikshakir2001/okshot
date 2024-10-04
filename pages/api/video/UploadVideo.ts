@@ -90,10 +90,16 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
       return res.json({ status: 'subscription limit end', message: 'payment required', data: 'payment' });
     }
 
+
+    const videosDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(videosDir)) {
+  fs.mkdirSync(videosDir, { recursive: true });  // creates the directory if it doesn't exist
+}
+
     globalTimestamp = new Date().toISOString().replace(/[-:.]/g, ''); // Set the global timestamp
 
     const videoName = file.originalFilename?.replace(/\.[^/.]+$/, "");
-    const uploadDir = path.join(process.cwd(), 'public', 'videos', userId, `${videoName}_${globalTimestamp}`);
+    const uploadDir = path.join(process.cwd(), 'uploads', 'videos', userId, `${videoName}_${globalTimestamp}`);
 
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
@@ -107,7 +113,7 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     fs.renameSync(file.filepath, newFilePath);
 
     // Create the database path using the same structure
-    const dbPath = `/videos/${userId}/${videoName}_${globalTimestamp}/${videoName}_${globalTimestamp}${path.extname(file.originalFilename || '')}`;
+    const dbPath = `videos/${userId}/${videoName}_${globalTimestamp}/${videoName}_${globalTimestamp}${path.extname(file.originalFilename || '')}`;
     
     const videoDuration = 0; // Add logic to calculate video duration if needed
 

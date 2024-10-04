@@ -131,7 +131,7 @@ const FetchingVideo: NextPageWithLayout = ({
           >
             <Typography variant="h6">{t("video-preview")}</Typography>
             <Box sx={{ mt: 2 }}>
-            <ReactPlayer url={originalLink} width="400px" height="250px" controls={true} />
+            <ReactPlayer url={`/api/loadVideo/${originalLink}`} width="400px" height="250px" controls={true} />
             </Box>
           </Box>
         </Grid>

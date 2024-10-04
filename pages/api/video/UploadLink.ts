@@ -129,8 +129,13 @@ const handlePOST = async (req: ExtendedNextApiRequest, res: NextApiResponse) => 
     }
 
     // Download and save video using ytdl-core and ffmpeg
+    const videosDir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(videosDir)) {
+      fs.mkdirSync(videosDir, { recursive: true });  // creates the directory if it doesn't exist
+    }
+    
     const videoName = `${videoId}`;
-    const uploadDir = path.join(process.cwd(), 'public', 'videos', userId, `${videoName}_${globalTimestamp}`);
+    const uploadDir = path.join(process.cwd(), 'uploads', 'videos', userId, `${videoName}_${globalTimestamp}`);
     
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
@@ -139,7 +144,7 @@ const handlePOST = async (req: ExtendedNextApiRequest, res: NextApiResponse) => 
     const videoPath = path.join(uploadDir, `${videoName}.mp4`);
     const audioPath = path.join(uploadDir, `${videoName}.m4a`);
     const outputPath = path.join(uploadDir, `${videoName}_${globalTimestamp}.mp4`);
-    const dbPath = `/videos/${userId}/${videoName}_${globalTimestamp}/${videoName}_${globalTimestamp}.mp4`;
+    const dbPath = `videos/${userId}/${videoName}_${globalTimestamp}/${videoName}_${globalTimestamp}.mp4`;
     
     const videoStream = ytdl(videoId, { quality: 'highestvideo' });
     const audioStream = ytdl(videoId, { quality: 'highestaudio' });
