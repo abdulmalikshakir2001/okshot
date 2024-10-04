@@ -62,3 +62,4 @@ yarn-error.log*
 .sentryclirc
 video_processing.log
 *.log
+/uploads
