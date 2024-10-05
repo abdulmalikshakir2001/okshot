@@ -308,7 +308,7 @@ def videoProcessing(config):
                 current_stream = ffmpeg.overlay(current_stream, image_stream, x=emoji_x, y=emoji_y, enable=f"between(t,{start_time},{end_time})")
 
         # Apply the final overlay to the subtitled video and save it to the temporary path
-        current_stream.output(temp_output_path).run()
+        current_stream.output(temp_output_path).run(capture_stdout=True, capture_stderr=True, loglevel="verbose")
 
         # Clean up: delete the old output file if it exists and rename the temporary file to the final output path
         if os.path.exists(output_video_path):
