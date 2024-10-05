@@ -1,6 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
+export const config = {
+  api: {
+    responseLimit: false,
+  },
+};
+
 
 export default async function handler(
   req: NextApiRequest,

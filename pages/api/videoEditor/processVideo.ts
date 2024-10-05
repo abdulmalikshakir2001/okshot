@@ -2,6 +2,11 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { exec } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+export const config = {
+  api: {
+    responseLimit: false,
+  },
+};
 
 // Define the type for each font setting
 interface FontStyleSettings {
