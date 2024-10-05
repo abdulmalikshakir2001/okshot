@@ -40,11 +40,9 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!filePath || !Array.isArray(filePath)) {
     return res.status(400).json({ error: { message: 'Invalid file path' } });
   }
-
   // Join all the segments to form the full path
   const videoPath = path.join(process.cwd(), 'uploads', ...filePath);
   console.log(`Full file path: ${videoPath}`);  // Log the full path
-
   try {
     const videoFile = fs.createReadStream(videoPath);  // Stream the video file
     const stat = fs.statSync(videoPath);
@@ -53,6 +51,7 @@ const handleGET = async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader('Content-Type', 'video/mp4');
     
     videoFile.pipe(res);  // Send the video file as a stream
+    
   } catch (error: any) {
     res.status(404).json({ error: { message: 'Video not found' } });
   }

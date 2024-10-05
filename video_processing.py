@@ -20,6 +20,28 @@ def videoProcessing(config):
     if not os.path.exists(config["output_folder"]):
         os.makedirs(config["output_folder"])
     login(token=config['pyannote_auth_token'])
+    emotion_model = pipeline("text-classification", model="arpanghoshal/EmoRoBERTa", return_all_scores=True)
+
+    def preload_emotion_images(config):
+    # List of all emotions including neutral
+        emotions = [
+            "admiration", "amusement", "anger", "annoyance", "approval", "caring", 
+            "confusion", "curiosity", "desire", "disappointment", "disapproval", 
+            "disgust", "embarrassment", "excitement", "fear", "gratitude", "grief", 
+            "joy", "love", "nervousness", "optimism", "pride", "realization", 
+            "relief", "remorse", "sadness", "surprise", "neutral"
+        ]
+
+        # Preload the PNG files for all emotions
+        png_files = {}
+        for emotion in emotions:
+            png_file = os.path.join(config["image_folder"], f"{emotion}.png")
+            if os.path.exists(png_file):
+                # Preload the image as an input stream and resize it once
+                png_files[emotion] = ffmpeg.input(png_file, s=f"{config['image_size']}x{config['image_size']}")
+        return png_files
+
+
     def classify_video_content(text):
         classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
         candidate_labels = [
@@ -133,7 +155,7 @@ def videoProcessing(config):
 
     def detect_emotion(text):
         
-        emotion_model = pipeline("text-classification", model="arpanghoshal/EmoRoBERTa", return_all_scores=True)
+       
         result = emotion_model(text)
         emotion = max(result[0], key=lambda x: x['score'])['label'].lower()
         return emotion
@@ -251,9 +273,9 @@ def videoProcessing(config):
 
         return output_subtitled_video
 
-    def overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitled_video,filenameWithOutExt):
+    def overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitled_video, filenameWithOutExt):
         if not config.get("emoji"):
-            print("Emoji overlay is disabled. Skipping emoji overlay.")
+            # Skip if emoji overlay is not enabled
             return subtitled_video
 
         output_video_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config['output_video']}")
@@ -264,43 +286,38 @@ def videoProcessing(config):
         current_stream = video_stream
         input_streams = [video_stream]
 
-        # Add each emotion PNG as an overlay at its corresponding time
+        # Preload the emotion PNG files upfront
+        png_files = preload_emotion_images(config)
+
+        # Loop through each segment and apply the corresponding overlay
         for index, segment in enumerate(grouped_segments):
             emotion = segment['emotion']
             start_time = segment['start']
             end_time = segment['end']
 
-            # Determine the PNG file path for the detected emotion
-            png_file = os.path.join(config["image_folder"], f"{emotion}.png")
-
-            if os.path.exists(png_file):
-                # Load the image file as another input stream
-                image_stream = ffmpeg.input(png_file, loop=1, t=end_time - start_time, s=f"{config['image_size']}x{config['image_size']}")
+            # Check if the emotion has a preloaded PNG file
+            if emotion in png_files:
+                image_stream = png_files[emotion]  # Use the preloaded image
                 input_streams.append(image_stream)
 
-                # Apply the overlay filter sequentially
-                # Emoji will be centered by default, but the position can be controlled via config
+                # Set the position of the emoji overlay
                 emoji_x = config.get("emoji_position", {}).get("x", "(W-w)/2")
                 emoji_y = config.get("emoji_position", {}).get("y", "(H-h)/2")
 
+                # Apply the overlay filter, enabling it between the start and end times of the segment
                 current_stream = ffmpeg.overlay(current_stream, image_stream, x=emoji_x, y=emoji_y, enable=f"between(t,{start_time},{end_time})")
 
-        # Apply the final overlay to the subtitled video and save to the temporary path
+        # Apply the final overlay to the subtitled video and save it to the temporary path
         current_stream.output(temp_output_path).run()
 
-        print(f"Temporary video with emotion PNG overlays saved as: {temp_output_path}")
-
-        # Check if the final output file already exists, and if so, delete it
+        # Clean up: delete the old output file if it exists and rename the temporary file to the final output path
         if os.path.exists(output_video_path):
             os.remove(output_video_path)
-            print(f"Existing file '{output_video_path}' deleted.")
-
-        # Rename the temporary output to the final output path
         os.rename(temp_output_path, output_video_path)
-        print(f"Temporary file renamed to final output: {output_video_path}")
+        print(f"Final output video saved with overlays: {output_video_path}")
 
         return output_video_path
-
+  
     def add_background_music(subtitled_video, config,filenameWithOutExt,text): #text is transcription of video
         video_input = ffmpeg.input(subtitled_video)
         audio_input = ffmpeg.input(clipAudioFilePath(config,filenameWithOutExt))
