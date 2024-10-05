@@ -198,6 +198,13 @@ const hexToBgr = (hex: string): string => {
 };
 
 
+const ensureDirectoryExistence = (filePath: string) => {
+  const dirname = path.dirname(filePath);
+  if (!fs.existsSync(dirname)) {
+    fs.mkdirSync(dirname, { recursive: true });
+  }
+};
+
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -212,6 +219,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       // Generate ASS subtitle content with styles
+      ensureDirectoryExistence(tempAssSubtitlesPath);
       const assContent = generateAssFile(subtitlesContent, fontStyle);
 
       // Save the ASS file to disk
