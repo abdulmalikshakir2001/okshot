@@ -27,7 +27,8 @@ const unAuthenticatedRoutes = [
   '/api/payments/videoPayment',  
   '/api/subscriptions/subscription',  
   '/terms-of-services',
-  '/api/admin/contacts'
+  '/api/admin/contacts',
+  '/api/videoClips/clips',
   
 ];
 
