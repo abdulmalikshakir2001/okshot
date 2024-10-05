@@ -36,6 +36,15 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'oraseya.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'aivideo-production.up.railway.app',
+      },
+      {
+        protocol: 'https',
+        hostname: 's3.us-east-1.amazonaws.com',
+      },
+      
     ],
   },
   i18n,
