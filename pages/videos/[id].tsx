@@ -87,7 +87,7 @@ const FetchingVideo: NextPageWithLayout = ({
       toggleStates: toggleStates
   })
   .then(response => {
-    if(response.data.status === 'clips created'){
+    if(response.data.statusMessage === 'clips created'){
       router.push(`/videos/moments/${id}`)
     }
       console.log('Response:', response.data.status);

@@ -228,7 +228,7 @@ pythonProcess.on('close', async () => {
     
 
     console.log('All video clips and associated files have been processed and stored successfully.');
-    return res.json({ status:'clips created', message: 'video clips and associated files created' });
+    return res.status(200).json({ statusMessage:'clips created', message: 'video clips and associated files created' });
   } catch (err) {
     console.error('Error while processing video clips and associated files:', err);
   }
