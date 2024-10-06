@@ -47,7 +47,7 @@ const FetchingVideo: NextPageWithLayout = ({
   const [aiInstructions, setAiInstructions] = useState('');
   const [toggleStates, setToggleStates] = useState({
     magicFrame: false,
-    magicEmoji: false,
+    // magicEmoji: false,
     magicMusic: false,
   });
 
@@ -288,8 +288,8 @@ const FetchingVideo: NextPageWithLayout = ({
           switch (key) {
             case 'magicFrame':
               return 'Magic Frame';
-            case 'magicEmoji':
-              return 'Magic Emoji';
+            // case 'magicEmoji':
+            //   return 'Magic Emoji';
             case 'magicMusic':
               return 'Magic Music';
             default:

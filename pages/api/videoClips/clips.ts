@@ -18,7 +18,7 @@ export default async function handler(
         await handlePOST(req, res);
         break;
       default:
-        res.setHeader('Allow', 'GET, POST, PUT');
+        res.setHeader('Allow', ['GET, POST, PUT']);
         res.status(405).json({
           error: { message: `Method ${method} Not Allowed` },
         });
@@ -101,7 +101,7 @@ console.log('Folder path:', folderPath);
       srt_file: "srt.srt",
       ass_file: "ass.ass",
       output_video: "output.mp4",
-      emoji: toggleStates.magicEmoji,
+      emoji: false , //toggleStates.magicEmoji
       emoji_position: { x: "(W-w)/2", y: "(H-h)/2" },
       min_words: 4,
       max_words: 8,

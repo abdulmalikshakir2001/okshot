@@ -161,7 +161,7 @@ const VideoUpload: React.FC = () => {
             >
               <Link href={`/videos/moments/${clip.id}`} passHref>
                 <ReactPlayer
-                  url={clip.originalLink}
+                  url={`/api/loadVideo/${clip.originalLink}`}
                   width="100%"
                   height="100%"
                   className="flex-1"
