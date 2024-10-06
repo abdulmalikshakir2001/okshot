@@ -77,7 +77,10 @@ const FetchingVideo: NextPageWithLayout = ({
 
   const handleCreateClips = async () => {
     setLoading(true)
-    axios.post('/api/videoClips/clips', {
+    const instance = axios.create({
+      timeout: 3600 * 1000,
+    });
+    instance.post('/api/videoClips/clips', {
       originalLink: originalLink,
       videoId: id,
       timeFrameRange: timeFrameRange,
