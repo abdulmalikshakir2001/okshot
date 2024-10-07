@@ -15,6 +15,7 @@ import { Container, Grid, Typography, Box, Button, MenuItem, Select, InputLabel,
 import AddIcon from '@mui/icons-material/Add'; 
 import LanguageIcon from '@mui/icons-material/Language';
 import TimerIcon from '@mui/icons-material/Timer';
+import Home from '@/components/SocketClient';
 
 
 const durationOptions = [
@@ -112,9 +113,7 @@ const FetchingVideo: NextPageWithLayout = ({
       <Head>
         <title>{`${t('create-clips')}`}</title>
       </Head>
-     
-
-
+      <Home id={id} />
       <Container maxWidth="md" sx={{ mt: 4, backgroundColor: 'white', display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4" gutterBottom>
         {t("create-short")}

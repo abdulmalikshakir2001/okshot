@@ -27,6 +27,7 @@ const Home: NextPageWithLayout = () => {
     <FrontLayout>
       <main>
         <div className="relative">
+          
           <div className="mt-20 md:mt-0">
             <div className="relative mx-auto px-4 sm:px-6 lg:px-8">
               <div className=" lg:px-8  sm-padding-top">
@@ -330,6 +331,7 @@ const Home: NextPageWithLayout = () => {
 
 
           </div>
+
         </div>
       </main>
     </FrontLayout>

@@ -33,9 +33,13 @@ export default async function handler(
 // Handle POST request to create a video
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
       const {  videoId, toggleStates}: any = req.body;
+      const {  io}: any = req;
+
+
       let {  originalLink}: any = req.body;
       originalLink = `/${originalLink}`
-     
+
+      
 
       const session = await getSession(req,res)
       //  check usage
@@ -226,6 +230,7 @@ pythonProcess.on('close', async () => {
       },
     });
     
+    io.emit('videoClipUpdate');
 
     console.log('All video clips and associated files have been processed and stored successfully.');
     return res.status(200).json({ statusMessage:'clips created', message: 'video clips and associated files created' });

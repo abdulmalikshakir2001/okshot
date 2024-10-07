@@ -26,8 +26,9 @@
       "@/lib/*": ["lib/*"],
       "@/components/*": ["components/*"],
       "@/public/*": ["public/*"],
+      "@root/*": ["./*"] ,
     },
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "next-auth.d.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "next-auth.d.ts", "server.js"],
   "exclude": ["node_modules"],
 }
