@@ -41,7 +41,8 @@ export default function ModelsMenu() {
               d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          Text To Image
+          
+          {"Text To Image"}
           
           <span className="badge badge-xs badge-info"></span>
 
@@ -49,7 +50,8 @@ export default function ModelsMenu() {
       </li>
       <li>
         <Link href="/image-to-text">
-          Image To Text
+          
+          {"Image To Text"}
           <span className="badge badge-xs badge-info"></span>
         </Link>
       </li>
