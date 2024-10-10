@@ -29,6 +29,7 @@ const unAuthenticatedRoutes = [
   '/terms-of-services',
   '/api/admin/contacts',
   '/api/videoClips/**',
+  '/api/loadVideoPublic/**',
   
 ];
 

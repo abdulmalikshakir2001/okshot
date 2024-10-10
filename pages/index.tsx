@@ -44,7 +44,7 @@ const Home: NextPageWithLayout = () => {
                   <div className="sm-video-width flex">
                     <div className="aspect-video video-sm-width overflow-hidden mt-1 rounded bg-neutral-100" style={{ width: '100%' }}>
                       <video
-                        src="https://s3.us-east-1.amazonaws.com/remotionlambda-useast1-se782d1snq/renders/6jf0w4247b/out.mp4"
+                        src={`/api/loadVideoPublic/${'landing_page/yt_caption.mp4'}`}
                         autoPlay
                         muted
                         loop
