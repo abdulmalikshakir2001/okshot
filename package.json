@@ -95,7 +95,7 @@
     "@testing-library/jest-dom": "6.4.5",
     "@types/bcryptjs": "2.4.6",
     "@types/ffmpeg": "^1.0.7",
-    "@types/fluent-ffmpeg": "^2.1.25",
+    "@types/fluent-ffmpeg": "^2.1.26",
     "@types/jest": "29.5.12",
     "@types/micromatch": "4.0.7",
     "@types/mixpanel-browser": "2.49.0",
