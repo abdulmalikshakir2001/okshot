@@ -85,7 +85,7 @@ const Home: NextPageWithLayout = () => {
                             <div className="aspect-video rounded">
                               <video
                                 className="h-64"
-                                src="https://s3.us-east-1.amazonaws.com/remotionlambda-useast1-se782d1snq/renders/yrweub509u/out.mp4"
+                                src={`/api/loadVideoPublic/${'landing_page/yt_caption.mp4'}`}
                                 autoPlay
                                 muted
                                 loop
@@ -94,7 +94,7 @@ const Home: NextPageWithLayout = () => {
                             <div className="aspect-[9/16] rounded">
                               <video
                                 className="h-64"
-                                src="https://s3.us-east-1.amazonaws.com/remotionlambda-useast1-se782d1snq/renders/oiix1l1v2z/out.mp4"
+                                src={`/api/loadVideoPublic/${'landing_page/tiktok_caption.mp4'}`}
                                 autoPlay
                                 muted
                                 loop
@@ -103,7 +103,7 @@ const Home: NextPageWithLayout = () => {
                             <div className="aspect-video rounded">
                               <video
                                 className="h-64"
-                                src="https://s3.us-east-1.amazonaws.com/remotionlambda-useast1-se782d1snq/renders/6jf0w4247b/out.mp4"
+                                src={`/api/loadVideoPublic/${'landing_page/yt1_caption.mp4'}`}
                                 autoPlay
                                 muted
                                 loop
@@ -112,7 +112,7 @@ const Home: NextPageWithLayout = () => {
                             <div className="aspect-[9/16] rounded">
                               <video
                                 className="h-64"
-                                src="https://s3.us-east-1.amazonaws.com/remotionlambda-useast1-se782d1snq/renders/2xmr6mc8vq/out.mp4"
+                                src={`/api/loadVideoPublic/${'landing_page/tiktok1_caption.mp4'}`}
                                 autoPlay
                                 muted
                                 loop
