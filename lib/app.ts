@@ -3,7 +3,7 @@ import env from './env';
 
 const app = {
   version: packageInfo.version,
-  name: '',
+  name: 'OkShot.ai',
   logoUrl: '/Ed.png',
   url: env.appUrl,
 };

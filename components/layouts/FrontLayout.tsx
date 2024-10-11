@@ -27,10 +27,10 @@ const  FrontLayout =({ children }: FrontLayoutProps)  =>{
         <meta name="theme-color" content="#ffffff" />
         <meta name="sitemap" content="/sitemap.xml" />
 
-        <link rel="canonical" href="https://www.editur.ai" />
+        <link rel="canonical" href="https://www.okshot.ai" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Editur.ai" />
+        <meta property="og:title" content="Okshot.ai" />
         <meta
           name="description"
           content={t('homepage-title-ai')}
@@ -39,7 +39,7 @@ const  FrontLayout =({ children }: FrontLayoutProps)  =>{
           property="og:description"
           content={t('homepage-title-ai')}
         />
-        <meta property="og:image" content="https://www.editur.ai/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FEd.0494cc35.png&w=640&q=75" />
+        
         <meta property="og:url" content="" />
         <meta property="og:locale" content="en" />
 

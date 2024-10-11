@@ -13,8 +13,8 @@ const Brand = () => {
       <Image
         src={theme !== 'dark' ? '/Ed.png' : '/Ed.png'}
         alt={app.name}
-        width={30}
-        height={30}
+        width={80}
+        height={80}
       />
       {app.name}
     </div>

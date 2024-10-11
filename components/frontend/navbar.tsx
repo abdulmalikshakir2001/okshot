@@ -20,7 +20,9 @@ export default function Navbar() {
       >
         <div className="flex lg:flex-1">
           <Link href="/" className="font-display flex items-center p-1.5">
-            <Image src={Ed} className="w-6" alt="" />
+          
+            <Image src={Ed} className="w-32" alt="" />
+          
             <span className="ml-2 block font-semibold text-xl">
               {""}
             </span>
@@ -98,7 +100,7 @@ export default function Navbar() {
         <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex items-center justify-between">
             <a href="#" className="font-display flex items-center p-1.5">
-              <Image src={Ed} className="w-6" alt="" />
+              <Image src={Ed} className="w-32 " alt="" />
               <span className="ml-2 block font-semibold text-xl">
                 {t('Editur')}
               </span>
