@@ -24,8 +24,8 @@ export default function AuthLayout({
             src={Ed}
             className="mx-auto h-12"
             alt={app.name}
-            width={48}
-            height={48}
+            width={80}
+            height={80}
           />
           {heading && (
             <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
