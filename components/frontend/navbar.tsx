@@ -24,7 +24,7 @@ export default function Navbar() {
             <Image src={Ed} className="w-32" alt="" />
           
             <span className="ml-2 block font-semibold text-xl">
-              {t('Editur')}
+              {""}
             </span>
           </Link>
         </div>
