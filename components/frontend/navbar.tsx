@@ -22,7 +22,7 @@ export default function Navbar() {
           <Link href="/" className="font-display flex items-center p-1.5">
             <Image src={Ed} className="w-6" alt="" />
             <span className="ml-2 block font-semibold text-xl">
-              {t('Editur')}
+              {""}
             </span>
           </Link>
         </div>
