@@ -63,7 +63,7 @@ const FetchingVideo: NextPageWithLayout = () => {
                   <div style={{ borderRadius: '10px',  border: '2px solid #000000', overflow: "hidden", background: "black" }}>
 
                     <ReactPlayer 
-                      url={`/api/loadVideo/${clip.clipSubtitledSrc}`}  
+                      url={`/api/loadVideo/${clip.clipSrc}`}  
                       controls={true} 
                       width="280px"  
                       height="500px"
@@ -81,7 +81,7 @@ const FetchingVideo: NextPageWithLayout = () => {
                         <button onClick={() => handleEditClick(clip.id)}  className='bg-blue-500 flex justify-center items-center gap-2 text-white px-4 py-2 rounded'> <IoFilmOutline /> {t("Edit")}</button>
 
                         <a
-                          href={`/api/loadVideo/${clip.clipSubtitledSrc}`}
+                          href={`/api/loadVideo/${clip.clipSrc}`}
                           download
                           className='border-2 flex justify-center items-center gap-2 shadow-lg px-4 py-2 rounded'
                         >
