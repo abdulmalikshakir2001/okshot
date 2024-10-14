@@ -18,7 +18,14 @@ def videoProcessing(config):
     if not os.path.exists(config["output_folder"]):
         os.makedirs(config["output_folder"])
     # login(token=config['pyannote_auth_token'])
-    
+    def generate_json_file_from_diarized_result(diarized_result, config, filenameWithOutExt):
+        json_file_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_transcription.json")
+        
+        # Open file in write mode and dump the JSON content
+        with open(json_file_path, 'w', encoding='utf-8') as json_file:
+            json.dump(diarized_result, json_file, indent=4, ensure_ascii=False)
+        
+        print(f"Transcription JSON file generated: {json_file_path}")
 
     # def preload_emotion_images(config):
     # # List of all emotions including neutral
@@ -254,7 +261,7 @@ def videoProcessing(config):
             print(f"SRT file generated: {srt_file_path}")
 
     def generate_srt_file_from_align_result(align_result, config, filenameWithOutExt):
-        srt_file_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config['srt_file']}.srt")
+        srt_file_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config['srt_file']}")
         
         # Open file in write mode
         with open(srt_file_path, 'w', encoding='utf-8') as srt_file:
@@ -395,7 +402,8 @@ def videoProcessing(config):
         aligned_result = align_transcription(result, config,filenameWithOutExt)
         generate_srt_file_from_align_result(aligned_result,config,filenameWithOutExt)
         
-        # diarized_result = diarization(aligned_result, config,filenameWithOutExt)
+        diarized_result = diarization(aligned_result, config,filenameWithOutExt)
+        generate_json_file_from_diarized_result(diarized_result, config, filenameWithOutExt)
         # grouped_segments = generate_subtitles_with_emotions(diarized_result["segments"], config,filenameWithOutExt)
         # print('result start============')
         # print(result)
@@ -404,9 +412,9 @@ def videoProcessing(config):
         # print(aligned_result)
         # print('algin result end============')
 
-        # print('diarized_result start============')
-        # print(diarized_result)
-        # print('diarized_result end============')
+        print('diarized_result start============')
+        print(diarized_result)
+        print('diarized_result end============')
 
 
         # print('grouped_segments start============')
