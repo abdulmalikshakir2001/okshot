@@ -253,6 +253,28 @@ def videoProcessing(config):
             
             print(f"SRT file generated: {srt_file_path}")
 
+    def generate_srt_file_from_align_result(align_result, config, filenameWithOutExt):
+        srt_file_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_{config['srt_file']}.srt")
+        
+        # Open file in write mode
+        with open(srt_file_path, 'w', encoding='utf-8') as srt_file:
+            # Loop through each segment in align_result
+            for index, segment in enumerate(align_result['segments'], start=1):
+                start_time = segment['start']
+                end_time = segment['end']
+                text = segment['text']
+
+                # Convert to SRT time format (HH:MM:SS,MMM)
+                start_srt_time = f"{int(start_time // 3600):02}:{int((start_time % 3600) // 60):02}:{start_time % 60:.3f}".replace('.', ',')
+                end_srt_time = f"{int(end_time // 3600):02}:{int((end_time % 3600) // 60):02}:{end_time % 60:.3f}".replace('.', ',')
+
+                # Write SRT format (index, time, text)
+                srt_file.write(f"{index}\n{start_srt_time} --> {end_srt_time}\n{text}\n\n")
+        
+        print(f"SRT file generated: {srt_file_path}")
+
+  
+
     # def burn_subtitles(config,filenameWithOutExt):
     #     video_input_path = clipMp4FilePath(config,filenameWithOutExt)
     #     cropped_video_path = os.path.join(config["output_folder"], f"{filenameWithOutExt}_cropped_video.mp4")
@@ -371,8 +393,10 @@ def videoProcessing(config):
         extract_audio(config,filenameWithOutExt)
         result = transcribe_audio(config,filenameWithOutExt)
         aligned_result = align_transcription(result, config,filenameWithOutExt)
-        diarized_result = diarization(aligned_result, config,filenameWithOutExt)
-        grouped_segments = generate_subtitles_with_emotions(diarized_result["segments"], config,filenameWithOutExt)
+        generate_srt_file_from_align_result(aligned_result,config,filenameWithOutExt)
+        
+        # diarized_result = diarization(aligned_result, config,filenameWithOutExt)
+        # grouped_segments = generate_subtitles_with_emotions(diarized_result["segments"], config,filenameWithOutExt)
         # print('result start============')
         # print(result)
         # print('result end============')
@@ -389,7 +413,7 @@ def videoProcessing(config):
         # print(grouped_segments)
         # print('grouped_segments end============')
         # generate_ass_highlighted(grouped_segments, config,filenameWithOutExt)
-        generate_srt_file(grouped_segments, config,filenameWithOutExt)
+        # generate_srt_file(grouped_segments, config,filenameWithOutExt)
         # subtitled_video = burn_subtitles(config,filenameWithOutExt)
         # final_output = overlay_emotion_images_on_subtitled_video(grouped_segments, config, subtitled_video,filenameWithOutExt)
         # text = " ".join([segment['text'] for segment in result['segments']])
