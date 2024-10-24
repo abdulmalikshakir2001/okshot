@@ -3,6 +3,7 @@
   "version": "1.4.5",
   "private": true,
   "prisma": {
+     "seed": "ts-node ./prisma/seed.ts"
     
   },
   "scripts": {
