@@ -45,7 +45,7 @@ const ImageToVideo: NextPageWithLayout = () => {
       setLoading(true); // Set loading state
 
       try {
-        const response = await axios.post('/api/imageToVideo', formData, {
+        const response = await axios.post('/api/imageToVideo/imageToVideo', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },

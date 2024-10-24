@@ -1,3 +1,4 @@
+--extra-index-url https://download.pytorch.org/whl/cu124
 accelerate==1.0.1
 certifi==2024.8.30
 charset-normalizer==3.4.0
@@ -27,9 +28,9 @@ sentencepiece==0.2.0
 setuptools==75.1.0
 sympy==1.13.3
 tokenizers==0.20.1
-torch==2.4.1+cu124
-torchaudio==2.4.1+cu124
-torchvision==0.19.1+cu124
+torch
+torchaudio
+torchvision
 tqdm==4.66.5
 transformers==4.45.2
 typing_extensions==4.12.2
