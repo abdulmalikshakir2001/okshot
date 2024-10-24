@@ -3,60 +3,46 @@ import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import type { NextPageWithLayout } from 'types';
-import { Loading } from '@/components/shared'; // Assuming Loading component is available
 
-const TextToVideo: NextPageWithLayout = () => {
-  const [loading, setLoading] = useState(false);
+const TextToImage: NextPageWithLayout = () => {
   const [prompt, setPrompt] = useState('');
 
   const handleGenerate = async () => {
     if (prompt.trim()) {
       try {
-        setLoading(true); // Start loading state
-        // Make the API request with responseType as 'blob' to handle binary data
-        const response = await axios.post('/api/textToVideo/textToVideo', { prompt }, {
-          responseType: 'blob', // This ensures the response is treated as a file
+        const response = await axios.post('/api/textToImage/textToImage', { prompt }, {
+          responseType: 'blob' // Ensure the response is treated as a binary file (blob)
         });
-
-        // Create a URL for the video file
-        const url = window.URL.createObjectURL(new Blob([response.data], { type: 'video/mp4' }));
+        
+        const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
         link.href = url;
-        link.setAttribute('download', 'ai_video.mp4'); // Specify the filename for the download
+        link.setAttribute('download', 'ai_image.png'); // Specify the filename for the download
         document.body.appendChild(link);
-        link.click(); // Programmatically click the link to trigger the download
-        link.parentNode?.removeChild(link); // Clean up the link after download
-
-        setPrompt(''); // Reset the prompt
-        setLoading(false); // End loading state
-
-        console.log('Video generated and downloading...');
+        link.click();
+        link.parentNode?.removeChild(link); // Clean up the DOM
+        
+        console.log('Image generated and downloading...');
       } catch (error) {
-        setLoading(false); // End loading state if there’s an error
-        console.error('Error generating video:', error);
-        alert('There was an issue generating the video.');
+        console.error('Error generating image:', error);
+        alert('There was an issue generating the image.');
       }
     } else {
-      alert('Please enter a prompt to generate the video.');
+      alert('Please enter a prompt to generate the image.');
     }
   };
-
-  // Show loading component if loading is true
-  if (loading) {
-    return <Loading />;
-  }
 
   return (
     <div className="w-full flex justify-center">
       <div className="w-1/2 flex flex-col">
         <textarea
           className="textarea textarea-primary w-full"
-          placeholder="Describe the prompt to generate AI Video"
+          placeholder="Describe the prompt to generate AI image"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)} // Update prompt state on change
         ></textarea>
         <button className="btn self-end mt-4" onClick={handleGenerate}>
-          {"Generate Video"}
+          {"Generate Image"}
         </button>
       </div>
     </div>
@@ -71,4 +57,4 @@ export async function getStaticProps({ locale }: GetServerSidePropsContext) {
   };
 }
 
-export default TextToVideo;
+export default TextToImage;
