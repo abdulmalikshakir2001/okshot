@@ -41,25 +41,39 @@ const ImageToVideo: NextPageWithLayout = () => {
     if (image) {
       const formData = new FormData();
       formData.append('file', image); // Append the image to the formData
-
+  
       setLoading(true); // Set loading state
-
+  
       try {
+        // Make the API request with responseType as 'blob' to handle binary data (the video file)
         const response = await axios.post('/api/imageToVideo/imageToVideo', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
+          responseType: 'blob', // This ensures the response is treated as a file
         });
-        console.log('Response:', response.data); // Handle success (e.g., show message)
-        setLoading(false);
+  
+        // Create a URL for the video file
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: 'video/mp4' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'ai_video.mp4'); // Specify the filename for the download
+        document.body.appendChild(link);
+        link.click(); // Programmatically click the link to trigger the download
+        link.parentNode?.removeChild(link); // Clean up the link after download
+  
+        console.log('Video generated and downloading...');
+        setLoading(false); // Reset loading state after successful download
       } catch (error) {
-        console.error('Error uploading image:', error);
+        console.error('Error uploading image or downloading video:', error);
         setLoading(false); // Reset loading state on error
+        alert('There was an issue generating or downloading the video.');
       }
     } else {
       alert('No image uploaded');
     }
   };
+  
   return (
     <div className="w-full flex flex-col items-center justify-center py-10">
       
