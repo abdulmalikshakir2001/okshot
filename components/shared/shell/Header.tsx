@@ -1,17 +1,16 @@
-
 import React from 'react';
 import { useSession } from 'next-auth/react';
 import {
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   SunIcon,
-
 } from '@heroicons/react/24/outline';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import useTheme from 'hooks/useTheme';
 import env from '@/lib/env';
 import { signOut } from 'next-auth/react';
 import { useTranslation } from 'next-i18next';
+import Link from 'next/link';
 
 interface HeaderProps {
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -41,6 +40,12 @@ const Header = ({ setSidebarOpen }: HeaderProps) => {
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
         <div className="relative flex flex-1"></div>
         <div className="flex items-center gap-x-4 lg:gap-x-6">
+          <Link href="/text-to-image">{'Text To Image'}</Link>
+          <Link href="/image-to-video">{'Image To Video'}</Link>
+          <Link href="/text-to-video">
+            {'Text To Video'}
+          </Link>
+
           <div className="dropdown dropdown-end">
             <div className="flex items-center cursor-pointer" tabIndex={0}>
               <span className="hidden lg:flex lg:items-center">
@@ -60,8 +65,6 @@ const Header = ({ setSidebarOpen }: HeaderProps) => {
               tabIndex={0}
               className="dropdown-content z-[1] menu p-2 shadow bg-base-100 border rounded w-40 space-y-1"
             >
-              
-
               {env.darkModeEnabled && (
                 <li>
                   <button

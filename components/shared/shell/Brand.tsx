@@ -16,7 +16,7 @@ const Brand = () => {
         width={80}
         height={80}
       />
-      {app.name}
+    
     </div>
     </Link>
   );
