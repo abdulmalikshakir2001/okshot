@@ -1,3 +1,46 @@
+import os
+import torch
+from diffusers import StableDiffusionPipeline
+import json
+import sys
+
+def generate_image(config):
+    # Load the model and set to CUDA
+    pipe = StableDiffusionPipeline.from_pretrained(
+        "runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16
+    )
+    pipe = pipe.to("cuda")
+
+    # Ensure output folder exists
+    if not os.path.exists(config["path"]):
+        os.makedirs(config["path"])
+
+    # Generate the image based on the prompt
+    prompt = config["prompt"]
+    image = pipe(prompt).images[0]
+
+    # Construct the image file path and save
+    image_file_path = os.path.join(config["path"], 'ai_image.png')
+    image.save(image_file_path)
+
+    print(f"Image saved at: {image_file_path}")
+    return image_file_path
+
+
+def main():
+    # Load the config passed from the command line as JSON
+    config = json.loads(sys.argv[1])
+    
+    # Call the function to generate and save the image
+    generate_image(config)
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
 # import torch
 # from diffusers import StableDiffusionPipeline
 # pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16)
@@ -10,59 +53,6 @@
 
 
 
-import torch
-
-from diffusers import StableVideoDiffusionPipeline
-from diffusers.utils import load_image, export_to_video
-
-pipe = StableVideoDiffusionPipeline.from_pretrained(
-    "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16"
-)
-pipe.enable_model_cpu_offload()
-
-# Load the conditioning image
-image = load_image("https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/diffusers/svd/rocket.png")
-image = image.resize((1024, 576))
-
-generator = torch.manual_seed(42)
-frames = pipe(image, decode_chunk_size=8, generator=generator).frames[0]
-
-export_to_video(frames, "generated.mp4", fps=7)
-
-
-
-
-
-
-
-
-# video file from text
-# import torch
-# print(torch.cuda.is_available())
-# from diffusers import CogVideoXPipeline
-# from diffusers.utils import export_to_video
-
-# prompt = "laptop flying with feathers like bird on the  surface of the ocean"
-
-# pipe = CogVideoXPipeline.from_pretrained(
-#     "THUDM/CogVideoX-2b",
-#     torch_dtype=torch.float16
-# )
-
-# pipe.enable_model_cpu_offload()
-# pipe.enable_sequential_cpu_offload()
-# pipe.vae.enable_slicing()
-# pipe.vae.enable_tiling()
-# video = pipe(
-#     prompt=prompt,
-#     num_videos_per_prompt=1,
-#     num_inference_steps=50,
-#     num_frames=49,
-#     guidance_scale=6,
-#     generator=torch.Generator(device="cuda").manual_seed(42),
-# ).frames[0]
-
-# export_to_video(video, "output.mp4", fps=8)
 
 
 

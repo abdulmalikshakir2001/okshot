@@ -3,24 +3,43 @@ import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import type { NextPageWithLayout } from 'types';
+import { Loading } from '@/components/shared';
 
 const TextToImage: NextPageWithLayout = () => {
+    const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState('');
 
   const handleGenerate = async () => {
     if (prompt.trim()) {
       try {
-        const response = await axios.post('/api/textToImage', { prompt });
-        console.log('Image generated:', response.data);
-        // Handle the response, e.g., display the generated image or show a success message
+        setLoading(true);
+        const response = await axios.post('/api/textToImage/textToImage', { prompt }, {
+          responseType: 'blob' // Ensure the response is treated as a binary file (blob)
+        });
+        
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'ai_image.png'); // Specify the filename for the download
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link); // Clean up the DOM
+        setPrompt('')
+        setLoading(false);
+
+        
+        console.log('Image generated and downloading...');
       } catch (error) {
         console.error('Error generating image:', error);
-        // Handle the error, e.g., show an error message
+        alert('There was an issue generating the image.');
       }
     } else {
       alert('Please enter a prompt to generate the image.');
     }
   };
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="w-full flex justify-center">
