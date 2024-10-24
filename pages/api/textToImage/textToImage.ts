@@ -30,7 +30,6 @@ export default async function handler(
 // Handle POST request to create a video
 const handlePOST = async (req: NextApiRequest, res: NextApiResponse) => {
   const { prompt }: any = req.body;
-
   const session = await getSession(req, res); // session?.user.id
   const directoryPath = path.join(
     process.cwd(),
