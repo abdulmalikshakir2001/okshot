@@ -3,13 +3,16 @@ import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import type { NextPageWithLayout } from 'types';
+import { Loading } from '@/components/shared';
 
 const TextToImage: NextPageWithLayout = () => {
+    const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState('');
 
   const handleGenerate = async () => {
     if (prompt.trim()) {
       try {
+        setLoading(true)
         const response = await axios.post('/api/textToImage/textToImage', { prompt }, {
           responseType: 'blob' // Ensure the response is treated as a binary file (blob)
         });
@@ -21,6 +24,8 @@ const TextToImage: NextPageWithLayout = () => {
         document.body.appendChild(link);
         link.click();
         link.parentNode?.removeChild(link); // Clean up the DOM
+        setPrompt('')
+        setLoading(false)
         
         console.log('Image generated and downloading...');
       } catch (error) {
@@ -31,6 +36,10 @@ const TextToImage: NextPageWithLayout = () => {
       alert('Please enter a prompt to generate the image.');
     }
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="w-full flex justify-center">

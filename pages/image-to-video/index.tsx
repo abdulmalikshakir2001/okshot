@@ -4,12 +4,14 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import axios from 'axios'; // Import axios
 import type { NextPageWithLayout } from 'types';
 import Image from 'next/image';
+import { Loading } from '@/components/shared';
 
 const ImageToVideo: NextPageWithLayout = () => {
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(false); // Loading state for the button
+  const [loading1, setLoading1] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -46,6 +48,7 @@ const ImageToVideo: NextPageWithLayout = () => {
   
       try {
         // Make the API request with responseType as 'blob' to handle binary data (the video file)
+        setLoading1(true)
         const response = await axios.post('/api/imageToVideo/imageToVideo', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -61,6 +64,7 @@ const ImageToVideo: NextPageWithLayout = () => {
         document.body.appendChild(link);
         link.click(); // Programmatically click the link to trigger the download
         link.parentNode?.removeChild(link); // Clean up the link after download
+        setLoading1(false)
   
         console.log('Video generated and downloading...');
         setLoading(false); // Reset loading state after successful download
@@ -73,6 +77,9 @@ const ImageToVideo: NextPageWithLayout = () => {
       alert('No image uploaded');
     }
   };
+  if (loading1) {
+    return <Loading />;
+  }
   
   return (
     <div className="w-full flex flex-col items-center justify-center py-10">

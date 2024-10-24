@@ -3,13 +3,17 @@ import axios from 'axios';
 import { GetServerSidePropsContext } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import type { NextPageWithLayout } from 'types';
+import { Loading } from '@/components/shared';
 
 const TextToVideo: NextPageWithLayout = () => {
+    const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState('');
 
   const handleGenerate = async () => {
     if (prompt.trim()) {
       try {
+        setLoading(true)
+
         // Make the API request with responseType as 'blob' to handle binary data
         const response = await axios.post('/api/textToVideo/textToVideo', { prompt }, {
           responseType: 'blob', // This ensures the response is treated as a file
@@ -23,6 +27,8 @@ const TextToVideo: NextPageWithLayout = () => {
         document.body.appendChild(link);
         link.click(); // Programmatically click the link to trigger the download
         link.parentNode?.removeChild(link); // Clean up the link after download
+        setPrompt('')
+        setLoading(false)
 
         console.log('Video generated and downloading...');
       } catch (error) {
@@ -33,6 +39,9 @@ const TextToVideo: NextPageWithLayout = () => {
       alert('Please enter a prompt to generate the video.');
     }
   };
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="w-full flex justify-center">
