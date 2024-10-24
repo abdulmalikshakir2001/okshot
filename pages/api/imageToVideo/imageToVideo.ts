@@ -130,12 +130,6 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
         res.status(500).json({ message: 'Failed to generate file', error: 'error exists' });
       }
     // Respond with success message and file path
-    return res.status(200).json({
-      status: 'true',
-      message: 'File uploaded successfully',
-      data: {
-        filePath,
-      },
-    });
+    
   });
 }
