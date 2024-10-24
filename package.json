@@ -32,7 +32,7 @@
   "dependencies": {
     "@boxyhq/metrics": "0.2.7",
     "@boxyhq/react-ui": "3.3.43",
-    "@boxyhq/saml-jackson": "1.25.0",
+    "@boxyhq/saml-jackson": "1.30.0",
     "@distube/ytdl-core": "^4.13.7",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
