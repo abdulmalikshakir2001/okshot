@@ -41,17 +41,6 @@ if __name__ == "__main__":
 
 
 
-# import torch
-# from diffusers import StableDiffusionPipeline
-# pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16)
-# pipe = pipe.to("cuda")
-
-# prompt = "ant having feathers of  hen with that  feathers ant flying on city"
-# image = pipe(prompt).images[0]
-# image.save("ai_image.png")
-
-
-
 
 
 

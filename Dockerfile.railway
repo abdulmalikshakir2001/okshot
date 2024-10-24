@@ -41,20 +41,34 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 # Set the working directory inside the container
 WORKDIR /app
 
-# Create and activate a Python virtual environment using Python 3.10
+# Create and activate the first Python virtual environment using Python 3.10
 RUN python3.10 -m venv /myenv
 ENV PATH="/myenv/bin:$PATH"
 
-# Install setuptools-rust in the virtual environment
+# Install setuptools-rust in the first virtual environment
 RUN pip install --upgrade pip setuptools-rust
 
-# Install Python dependencies
+# Install Python dependencies for the first myenv
 COPY requirements.txt .
 RUN pip install -r requirements.txt \
     && pip install nltk \
     && python3.10 -m nltk.downloader -d /usr/local/share/nltk_data punkt punkt_tab vader_lexicon
 
+# Install Torch for the first environment
 RUN pip install torch==2.0.0 torchvision==0.15.0 torchaudio==2.0.0 --index-url https://download.pytorch.org/whl/cpu
+
+# Now create and activate the second Python virtual environment for "ai_features/text_img_video" using the latest Python version
+# Here we assume `python3` is the latest version in the base system
+WORKDIR /app/ai_features/text_img_video
+RUN python3 -m venv /app/ai_features/text_img_video/myenv 
+ENV PATH="/app/ai_features/text_img_video/myenv/bin:$PATH"
+
+# Install dependencies for the second environment from the local requirements.txt
+COPY ai_features/text_img_video/requirements.txt .
+RUN pip install -r requirements.txt
+
+# Restore the working directory to /app to continue with npm setup
+WORKDIR /app
 
 # Copy package.json and package-lock.json first to leverage Docker cache
 COPY package.json package-lock.json ./
@@ -64,9 +78,6 @@ RUN npm config set fetch-retries 5 \
     && npm config set fetch-retry-mintimeout 20000 \
     && npm config set fetch-retry-maxtimeout 120000 \
     && npm install || npm install || npm install  # Retry on failure
-
-# Copy the remaining app files
-COPY . .
 
 # Make environment variables dynamic (loaded at runtime)
 ARG NEXTAUTH_URL
@@ -123,3 +134,4 @@ RUN npm run db:setup
 
 # Start the Next.js app in development mode
 CMD ["npm", "run", "start"]
+
